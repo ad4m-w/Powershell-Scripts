@@ -32,51 +32,54 @@ Function MenuMaker {
         [string]$Title = $null
     )
 
-    # Calculate the width
+    # Calculate the width based on the title and longest selection
     $Width = if ($Title) {
         $Length = $Title.Length
         $Length2 = $Selections | % { $_.Length } | Sort-Object -Descending | Select-Object -First 1
-        $Length2, $Length | Sort-Object -Descending | Select-Object -First 1
+        [Math]::Max($Length2, $Length)
     } else {
         $Selections | % { $_.Length } | Sort-Object -Descending | Select-Object -First 1
     }
 
-    # Buffer calculation
+    # Buffer calculation (this helps with spacing)
     $Buffer = if (($Width * 1.5) -gt 78) { [math]::floor((78 - $Width) / 2) } else { [math]::floor($Width / 4) }
     if ($Buffer -gt 6) { $Buffer = 6 }
 
-    # Max width calculation
-    $MaxWidth = $Buffer * 2 + $Width + ($Selections.Count).Length + 2
+    # Max width calculation based on buffer, width, and selections count
+    $MaxWidth = $Buffer * 2 + $Width + ($Selections.Count).ToString().Length + 2
 
     # Initialize the menu array
     $Menu = @()
 
-    # Top border: Add parentheses around the multiplication to ensure it evaluates first
+    # Top border: Proper string multiplication
     $Menu += "╔" + ("═" * $MaxWidth) + "╗"
 
     if ($Title) {
-        # Title: Center the title in the menu
+        # Title: Center the title within the menu
         $Menu += "║" + (" " * [Math]::Floor(($MaxWidth - $Title.Length) / 2)) + $Title + (" " * [Math]::Ceiling(($MaxWidth - $Title.Length) / 2)) + "║"
         $Menu += "╟" + ("─" * $MaxWidth) + "╢"
     }
 
-    # Menu items: Ensure proper string multiplication for item spacing
+    # Menu items: Formatting each selection item
     For ($i = 1; $i -le $Selections.Count; $i++) {
+        # Numbering and padding for selection items
         $Item = "$(if ($Selections.Count -gt 9 -and $i -lt 10) { " " })$i. "
         $Menu += "║" + (" " * $Buffer) + $Item + $Selections[$i - 1] + (" " * ($MaxWidth - $Buffer - $Item.Length - $Selections[$i - 1].Length)) + "║"
     }
 
-    # Exit option (if specified)
+    # Exit option: If specified, add the exit option at the bottom
     If ($IncludeExit) {
         $Menu += "║" + (" " * $MaxWidth) + "║"
         $Menu += "║" + (" " * $Buffer) + "X - Exit" + (" " * ($MaxWidth - $Buffer - 8)) + "║"
     }
 
-    # Bottom border: Add parentheses around the multiplication to ensure it evaluates first
+    # Bottom border: Proper string multiplication for the bottom border
     $Menu += "╚" + ("═" * $MaxWidth) + "╝"
 
+    # Return the formatted menu
     return $Menu
 }
+
 
 # Disable download progress bar increases download speed significantly.
 $ProgressPreference = 'SilentlyContinue'
