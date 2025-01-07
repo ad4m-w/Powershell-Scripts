@@ -1,8 +1,8 @@
 # Created By Adam Waszczyszak
-# Version 1.0
+# Version 1.1
 
 $host.ui.RawUI.WindowTitle = “MSShell for Kiosk by Adam Waszczyszak”
-# Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\MSShell.ps1"
+# Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
 # Might need to update local group policy if the bypass does not work.
 
 # Self-check for admin rights, and ask for perms if launched not as admin (from Superuser.com)
@@ -91,10 +91,20 @@ if($startMenu -eq 1){
     $NewLocalAdmin = Read-Host "New local admin username:"
     $Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
     Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
+    'Saving new account credentials to C drive, please delete if no longer needed.'
+    $outputAccount = '$NewLocalAdmin : $Password'
+    $outputAccount | Out-File -FilePath C:\account.txt
+    Read-Host -Prompt "Press Enter to sign out..."
+    shutdown /l
     exit 
 }
 
 if($startMenu -eq 2){
+
+    'Have to manually disable S-Mode, launching Microsoft Store...'
+    Start-Process ms-windows-store://pdp/?productid=9nffmgm4vkkd
+    Read-Host -Prompt "Press Enter to continue..."
+
 
     if (Test-Path -Path C:\Temp){
      "Temp Folder Already Exists"
@@ -133,9 +143,6 @@ if($startMenu -eq 2){
      Set-Acl -Path C:\ProgramData\PTI\ -AclObject $path
 
      "PTI Folder Permissions Set!"
-
-     'Have to manually disable S-Mode, luanching Microsoft Store...'
-     Start-Process ms-windows-store://pdp/?productid=9nffmgm4vkkd
 
      'Installing PS Module...'
      Install-Module PSWindowsUpdate
@@ -186,7 +193,7 @@ if($startMenu -eq 2){
      Invoke-WebRequest -Uri $text -OutFile $Destination
 
      "Launching Adobe with silent installer params..."
-     Start-Process -FilePath "C:\Temp\adobe.exe" -ArgumentList -sAll
+     Start-Process -FilePath "C:\Temp\adobe.exe" -ArgumentList "/sPB"
      "Success!"
 
      'Parsing download site...'
@@ -242,11 +249,17 @@ if($startMenu -eq 2){
     Invoke-WebRequest -Uri $text -OutFile $Destination
     'Uncompressing...'
     Expand-Archive -LiteralPath 'C:\Temp\kiosk.zip' -DestinationPath C:\
+    
+    'Adding Kiosk Shortcut to Desktop'
+    $TargetFile = "C:\v2.4_14vp\ms.Visitors.Kiosk.exe"  
+    $ShortcutFile = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"  
+    $WshShell = New-Object -ComObject WScript.Shell 
+    $Shortcut = $WshShell.CreateShortcut($ShortcutFile)
+    $Shortcut.TargetPath = $TargetFile
+    $Shortcut.Save()
     'Adding to startup...'
-
-    $shortcutPath = "C:\v2.4_14vp\MS Shift Kiosk.lnk"
+    $shortcutPath = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"
     $startupPath = [Environment]::GetFolderPath("Startup")
-
     Copy-Item $shortcutPath -Destination $startupPath 
     'Added to startup!'
 
