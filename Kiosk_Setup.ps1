@@ -24,34 +24,58 @@ if ((Test-Admin) -eq $false)  {
 # Clear Screen after admin check
 Clear-Host
 
-# Menu from StackOverflow
-Function MenuMaker{
+# Menu from StackOverflow, edited with comments and generalization 
+Function MenuMaker {
     param(
         [parameter(Mandatory=$true)][String[]]$Selections,
         [switch]$IncludeExit,
         [string]$Title = $null
-        )
+    )
 
-    $Width = if($Title){$Length = $Title.Length;$Length2 = $Selections|%{$_.length}|Sort -Descending|Select -First 1;$Length2,$Length|Sort -Descending|Select -First 1}else{$Selections|%{$_.length}|Sort -Descending|Select -First 1}
-    $Buffer = if(($Width*1.5) -gt 78){[math]::floor((78-$width)/2)}else{[math]::floor($width/4)}
-    if($Buffer -gt 6){$Buffer = 6}
-    $MaxWidth = $Buffer*2+$Width+$($Selections.count).length+2
+    # Calculate the width
+    $Width = if($Title) {
+        $Length = $Title.Length
+        $Length2 = $Selections | % { $_.Length } | Sort-Object -Descending | Select-Object -First 1
+        $Length2, $Length | Sort-Object -Descending | Select-Object -First 1
+    } else {
+        $Selections | % { $_.Length } | Sort-Object -Descending | Select-Object -First 1
+    }
+
+    # Buffer calculation
+    $Buffer = if(($Width * 1.5) -gt 78) { [math]::floor((78 - $Width) / 2) } else { [math]::floor($Width / 4) }
+    if ($Buffer -gt 6) { $Buffer = 6 }
+
+    # Max width
+    $MaxWidth = $Buffer * 2 + $Width + ($Selections.Count).Length + 2
+
+    # Create the menu
     $Menu = @()
-    $Menu += "╔"+"═"*$maxwidth+"╗"
-    if($Title){
-        $Menu += "║"+" "*[Math]::Floor(($maxwidth-$title.Length)/2)+$Title+" "*[Math]::Ceiling(($maxwidth-$title.Length)/2)+"║"
-        $Menu += "╟"+"─"*$maxwidth+"╢"
+
+    # Top border
+    $Menu += "╔" + "═" * $MaxWidth + "╗"
+
+    if ($Title) {
+        # Title
+        $Menu += "║" + " " * [Math]::Floor(($MaxWidth - $Title.Length) / 2) + $Title + " " * [Math]::Ceiling(($MaxWidth - $Title.Length) / 2) + "║"
+        $Menu += "╟" + "─" * $MaxWidth + "╢"
     }
-    For($i=1;$i -le $Selections.count;$i++){
-        $Item = "$(if ($Selections.count -gt 9 -and $i -lt 10){" "})$i`. "
-        $Menu += "║"+" "*$Buffer+$Item+$Selections[$i-1]+" "*($MaxWidth-$Buffer-$Item.Length-$Selections[$i-1].Length)+"║"
+
+    # Menu items
+    For ($i = 1; $i -le $Selections.Count; $i++) {
+        $Item = "$(if ($Selections.Count -gt 9 -and $i -lt 10) { " " })$i. "
+        $Menu += "║" + " " * $Buffer + $Item + $Selections[$i - 1] + " " * ($MaxWidth - $Buffer - $Item.Length - $Selections[$i - 1].Length) + "║"
     }
-    If($IncludeExit){
-        $Menu += "║"+" "*$MaxWidth+"║"
-        $Menu += "║"+" "*$Buffer+"X - Exit"+" "*($MaxWidth-$Buffer-8)+"║"
+
+    # Exit option (if specified)
+    If ($IncludeExit) {
+        $Menu += "║" + " " * $MaxWidth + "║"
+        $Menu += "║" + " " * $Buffer + "X - Exit" + " " * ($MaxWidth - $Buffer - 8) + "║"
     }
-    $Menu += "╚"+"═"*$maxwidth+"╝"
-    $menu
+
+    # Bottom border
+    $Menu += "╚" + "═" * $MaxWidth + "╝"
+
+    return $Menu
 }
 
 # Disable download progress bar increases download speed significantly.
