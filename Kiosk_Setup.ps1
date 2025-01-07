@@ -226,8 +226,8 @@ if($startMenu -eq 2){
      # Extract the text content from the parsed HTML
      $text = $response.ParsedHtml.body.innerText
 
-     'Giving 60 seconds for processes to catch up...'
-     Start-Sleep -Seconds 60
+     'Giving 120 seconds for processes to catch up...'
+     Start-Sleep -Seconds 120
 
      'Downloading driver...'
 
