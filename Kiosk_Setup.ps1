@@ -80,7 +80,6 @@ Function MenuMaker {
     return $Menu
 }
 
-
 # Disable download progress bar increases download speed significantly.
 $ProgressPreference = 'SilentlyContinue'
 
@@ -164,16 +163,10 @@ if($startMenu -eq 2){
 
      "Permissions for Temp and Visitor_Pics Set!"
 
-     $path=Get-Acl -Path C:\ProgramData\PTI
-     $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
-     $path.setaccessrule($acl)
-     Set-Acl -Path C:\ProgramData\PTI\ -AclObject $path
-
-     "PTI Folder Permissions Set!"
-
      'Installing PS Module...'
      Install-Module PSWindowsUpdate
      'Installing all newest Windows Updates'
+     Import-Module -Name PSWindowsUpdate -Force
      Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot
      Install-WindowsUpdate
 
@@ -351,6 +344,15 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         $HOMEURL = 'https://msshift.webex.com'
         Set-ItemProperty -Path $EdgeSUURL -Name '1' -Value $HomeURL
 
+        'Giving 45 seconds for processes to catch up...'
+        Start-Sleep -Seconds 60
+
+        'Blocking services...'
+        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO Connect” -Description “Block DYMO Connect” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action  
+        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO WebService” -Description “Block DYMO WebService” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action 
+        Set-Service -Name "AdobeARMservice" -StartupType Disabled
+        "Adobe and DYMO Services Blocked using the Firewall!"
+
         'Removing all drivers...'
 
         if(Test-Path "C:\Temp\kiosk.zip" ){
@@ -428,8 +430,6 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         }
         'Temp folder cleaned!'
 }
-
-
 
 if($startMenu -eq 3){
 # Function for the Menu creation
