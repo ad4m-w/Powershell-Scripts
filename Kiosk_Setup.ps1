@@ -33,7 +33,7 @@ Function MenuMaker {
     )
 
     # Calculate the width
-    $Width = if($Title) {
+    $Width = if ($Title) {
         $Length = $Title.Length
         $Length2 = $Selections | % { $_.Length } | Sort-Object -Descending | Select-Object -First 1
         $Length2, $Length | Sort-Object -Descending | Select-Object -First 1
@@ -42,7 +42,7 @@ Function MenuMaker {
     }
 
     # Buffer calculation
-    $Buffer = if(($Width * 1.5) -gt 78) { [math]::floor((78 - $Width) / 2) } else { [math]::floor($Width / 4) }
+    $Buffer = if (($Width * 1.5) -gt 78) { [math]::floor((78 - $Width) / 2) } else { [math]::floor($Width / 4) }
     if ($Buffer -gt 6) { $Buffer = 6 }
 
     # Max width
@@ -52,12 +52,12 @@ Function MenuMaker {
     $Menu = @()
 
     # Top border
-    $Menu += "╔" + "═" * $MaxWidth + "╗"
+    $Menu += "╔" + ("═" * $MaxWidth) + "╗"
 
     if ($Title) {
         # Title
         $Menu += "║" + " " * [Math]::Floor(($MaxWidth - $Title.Length) / 2) + $Title + " " * [Math]::Ceiling(($MaxWidth - $Title.Length) / 2) + "║"
-        $Menu += "╟" + "─" * $MaxWidth + "╢"
+        $Menu += "╟" + ("─" * $MaxWidth) + "╢"
     }
 
     # Menu items
@@ -73,10 +73,11 @@ Function MenuMaker {
     }
 
     # Bottom border
-    $Menu += "╚" + "═" * $MaxWidth + "╝"
+    $Menu += "╚" + ("═" * $MaxWidth) + "╝"
 
     return $Menu
 }
+
 
 # Disable download progress bar increases download speed significantly.
 $ProgressPreference = 'SilentlyContinue'
