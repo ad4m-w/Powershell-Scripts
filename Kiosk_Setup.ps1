@@ -109,7 +109,7 @@ if($startMenu -eq 1){
         begin {
         }    
         process {
-            New-LocalUser "$NewLocalAdmin" -Password $Password -FullName "$NewLocalAdmin" -Description "Temporary local admin"
+            New-LocalUser "$NewLocalAdmin" -Password $Password -FullName "$NewLocalAdmin" -Description "Property Admin Account"
             Write-Verbose "$NewLocalAdmin local user created"
             Add-LocalGroupMember -Group "Administrators" -Member "$NewLocalAdmin"
             Write-Verbose "$NewLocalAdmin added to the local administrator group"
@@ -170,7 +170,7 @@ if($startMenu -eq 2){
      Install-Module PSWindowsUpdate
      'Installing all newest Windows Updates'
      Import-Module -Name PSWindowsUpdate -Force
-     Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot
+     Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot -Verbose
      Install-WindowsUpdate
 
      'Done, remember to restart later!'
@@ -225,7 +225,10 @@ if($startMenu -eq 2){
      $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/c862d6fc-fc72-4e77-8347-ab079c8d4fa3"
      # Extract the text content from the parsed HTML
      $text = $response.ParsedHtml.body.innerText
- 
+
+     'Giving 60 seconds for processes to catch up...'
+     Start-Sleep -Seconds 60
+
      'Downloading driver...'
 
      $Destination = "C:\Temp\Zebra_CoreScanner_Driver.exe" 
@@ -234,7 +237,7 @@ if($startMenu -eq 2){
      Start-Process -FilePath "C:\Temp\Zebra_CoreScanner_Driver.exe" -ArgumentList "/S", "/v/qn"
      "Success!"
 
-     'Downloading Restore Default PDF...'
+     'Downloading Kiosk PDF...'
 
      $Destination = "C:\Temp\KioskPDF.pdf" 
      Invoke-WebRequest -Uri $text -OutFile $Destination
@@ -353,8 +356,6 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         'Blocking services...'
         New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO Connect” -Description “Block DYMO Connect” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action  
         New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO WebService” -Description “Block DYMO WebService” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action 
-        Set-Service -Name "AdobeARMservice" -StartupType Disabled
-        "Adobe and DYMO Services Blocked using the Firewall!"
 
         'Blocking Windows Updates...'
 
@@ -451,6 +452,14 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
              'ZXP-7 files removed!'
         }
         'Temp folder cleaned!'
+
+        Set-Service -Name "AdobeARMservice" -StartupType Disabled
+        Set-Service -Name "wuauserv" -StartupType Disabled
+        'Adobe and Windows Updates blocked in Services.'
+
+        'Deleting Local MS Shift User'
+        Remove-LocalUser -Name "msshi"
+
 }
 
 if($startMenu -eq 3){
@@ -466,10 +475,10 @@ function Print-Menu{
     'Enable Rotation Lock', #8
     'Disable Notifications', #9
     'Driver download and install menu', #10
-    'Microsoft Edge Registry Patch (Edge Engine Error)', #13
-    'Delete drivers from Temp', #16
-    'Disable Windows Updates', #17
-    'Silent Install Menu', #18
+    'Microsoft Edge Registry Patch (Edge Engine Error)', #11
+    'Delete drivers from Temp', #12
+    'Disable Windows Updates', #13
+    'Silent Install Menu', #14
     'Create silent print queue deletion task.' -Title 'Choose a Function (Type "menu" to reload)' -IncludeExit
 }
 
