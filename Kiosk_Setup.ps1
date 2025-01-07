@@ -24,6 +24,9 @@ if ((Test-Admin) -eq $false)  {
 # Clear Screen after admin check
 Clear-Host
 
+# Bypass Execution Policy
+Set-ExecutionPolicy Bypass
+
 # Menu from StackOverflow, edited with comments and generalization 
 Function MenuMaker {
     param(
@@ -344,7 +347,7 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         $HOMEURL = 'https://msshift.webex.com'
         Set-ItemProperty -Path $EdgeSUURL -Name '1' -Value $HomeURL
 
-        'Giving 45 seconds for processes to catch up...'
+        'Giving 60 seconds for processes to catch up...'
         Start-Sleep -Seconds 60
 
         'Blocking services...'
@@ -352,6 +355,25 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO WebService” -Description “Block DYMO WebService” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action 
         Set-Service -Name "AdobeARMservice" -StartupType Disabled
         "Adobe and DYMO Services Blocked using the Firewall!"
+
+        'Blocking Windows Updates...'
+
+        # Check service status
+        sc.exe query wuauserv
+
+        # Stop process in case it is running
+
+        sc.exe stop wuauserv
+
+        # Set service to disabled
+        sc.exe config wuauserv start=disabled
+
+        'Start Value should be 0x4 if really disabled'
+        REG.exe QUERY HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\wuauserv /v Start
+
+        # Disabled scheduled task
+        'Disable scheduled task'
+        Get-ScheduledTask -TaskPath '\Microsoft\Windows\WindowsUpdate\'  | Disable-ScheduledTask -ErrorAction SilentlyContinue
 
         'Removing all drivers...'
 
