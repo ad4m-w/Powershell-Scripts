@@ -45,22 +45,22 @@ Function MenuMaker {
     $Buffer = if (($Width * 1.5) -gt 78) { [math]::floor((78 - $Width) / 2) } else { [math]::floor($Width / 4) }
     if ($Buffer -gt 6) { $Buffer = 6 }
 
-    # Max width
+    # Max width calculation
     $MaxWidth = $Buffer * 2 + $Width + ($Selections.Count).Length + 2
 
-    # Create the menu
+    # Initialize the menu array
     $Menu = @()
 
-    # Top border
+    # Top border: Add parentheses around the multiplication to ensure it evaluates first
     $Menu += "╔" + ("═" * $MaxWidth) + "╗"
 
     if ($Title) {
-        # Title
+        # Title: Center the title in the menu
         $Menu += "║" + " " * [Math]::Floor(($MaxWidth - $Title.Length) / 2) + $Title + " " * [Math]::Ceiling(($MaxWidth - $Title.Length) / 2) + "║"
         $Menu += "╟" + ("─" * $MaxWidth) + "╢"
     }
 
-    # Menu items
+    # Menu items: Ensure proper string multiplication for item spacing
     For ($i = 1; $i -le $Selections.Count; $i++) {
         $Item = "$(if ($Selections.Count -gt 9 -and $i -lt 10) { " " })$i. "
         $Menu += "║" + " " * $Buffer + $Item + $Selections[$i - 1] + " " * ($MaxWidth - $Buffer - $Item.Length - $Selections[$i - 1].Length) + "║"
@@ -72,11 +72,12 @@ Function MenuMaker {
         $Menu += "║" + " " * $Buffer + "X - Exit" + " " * ($MaxWidth - $Buffer - 8) + "║"
     }
 
-    # Bottom border
+    # Bottom border: Add parentheses around the multiplication to ensure it evaluates first
     $Menu += "╚" + ("═" * $MaxWidth) + "╝"
 
     return $Menu
 }
+
 
 
 # Disable download progress bar increases download speed significantly.
