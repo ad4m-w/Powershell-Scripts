@@ -56,20 +56,20 @@ Function MenuMaker {
 
     if ($Title) {
         # Title: Center the title in the menu
-        $Menu += "║" + " " * [Math]::Floor(($MaxWidth - $Title.Length) / 2) + $Title + " " * [Math]::Ceiling(($MaxWidth - $Title.Length) / 2) + "║"
+        $Menu += "║" + (" " * [Math]::Floor(($MaxWidth - $Title.Length) / 2)) + $Title + (" " * [Math]::Ceiling(($MaxWidth - $Title.Length) / 2)) + "║"
         $Menu += "╟" + ("─" * $MaxWidth) + "╢"
     }
 
     # Menu items: Ensure proper string multiplication for item spacing
     For ($i = 1; $i -le $Selections.Count; $i++) {
         $Item = "$(if ($Selections.Count -gt 9 -and $i -lt 10) { " " })$i. "
-        $Menu += "║" + " " * $Buffer + $Item + $Selections[$i - 1] + " " * ($MaxWidth - $Buffer - $Item.Length - $Selections[$i - 1].Length) + "║"
+        $Menu += "║" + (" " * $Buffer) + $Item + $Selections[$i - 1] + (" " * ($MaxWidth - $Buffer - $Item.Length - $Selections[$i - 1].Length)) + "║"
     }
 
     # Exit option (if specified)
     If ($IncludeExit) {
-        $Menu += "║" + " " * $MaxWidth + "║"
-        $Menu += "║" + " " * $Buffer + "X - Exit" + " " * ($MaxWidth - $Buffer - 8) + "║"
+        $Menu += "║" + (" " * $MaxWidth) + "║"
+        $Menu += "║" + (" " * $Buffer) + "X - Exit" + (" " * ($MaxWidth - $Buffer - 8)) + "║"
     }
 
     # Bottom border: Add parentheses around the multiplication to ensure it evaluates first
@@ -77,8 +77,6 @@ Function MenuMaker {
 
     return $Menu
 }
-
-
 
 # Disable download progress bar increases download speed significantly.
 $ProgressPreference = 'SilentlyContinue'
