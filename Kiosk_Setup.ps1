@@ -1,4 +1,4 @@
-﻿# Created By Adam Waszczyszak
+# Created By Adam Waszczyszak
 # Version 1.0
 
 $host.ui.RawUI.WindowTitle = “MSShell for Kiosk by Adam Waszczyszak”
@@ -342,8 +342,8 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
              'PDFs Removed!'
         }
 
-        if(Test-Path "C:\Temp\ScanX_Config_Codebar.pdf"){
-             Remove-Item "C:\Temp\ScanX_Config_Codebar.pdf"
+        if(Test-Path "C:\Temp\KioskPDF.pdf"){
+             Remove-Item "C:\Temp\KioskPDF.pdf"
         }
 
         if(Test-Path "C:\Temp\Zebra123_CoreScanner_Driver.exe" ){
