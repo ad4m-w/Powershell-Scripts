@@ -1,5 +1,5 @@
 # Created By Adam Waszczyszak
-# Version 1.3
+# Version 1.4
 
 $host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
@@ -21,11 +21,14 @@ if ((Test-Admin) -eq $false)  {
     exit
 }
 
-# Clear Screen after admin check
-Clear-Host
+# Disable Quick Edit Mode
+Set-ItemProperty -Path 'HKCU:\Console\' -Name QuickEdit -Value 0
 
 # Bypass Execution Policy
 Set-ExecutionPolicy Bypass
+
+# Clear Screen after admin check
+Clear-Host
 
 # Menu from StackOverflow, edited with comments and generalization 
 Function MenuMaker {
