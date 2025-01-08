@@ -1,12 +1,12 @@
 # Created By Adam Waszczyszak
-# Version 1.1
+# Version 1.2
 
-$host.ui.RawUI.WindowTitle = “MSShell for Kiosk by Adam Waszczyszak”
+$host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
-# Might need to update local group policy if the bypass does not work.
+# Update local group policy if the bypass does not work.
+# Manually disable S-Mode to allow for scripts to run.
 
 # Self-check for admin rights, and ask for perms if launched not as admin (from Superuser.com)
-
 function Test-Admin {
     $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
     $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
@@ -83,7 +83,7 @@ Function MenuMaker {
     return $Menu
 }
 
-# Disable download progress bar increases download speed significantly.
+# Disabling download progress bar increases download speed significantly.
 $ProgressPreference = 'SilentlyContinue'
 
 function Start-Menu{
@@ -130,11 +130,6 @@ if($startMenu -eq 1){
 
 if($startMenu -eq 2){
 
-    'Have to manually disable S-Mode, launching Microsoft Store...'
-    Start-Process ms-windows-store://pdp/?productid=9nffmgm4vkkd
-    Read-Host -Prompt "Press Enter to continue..."
-
-
     if (Test-Path -Path C:\Temp){
      "Temp Folder Already Exists"
     }
@@ -167,11 +162,11 @@ if($startMenu -eq 2){
      "Permissions for Temp and Visitor_Pics Set!"
 
      'Installing PS Module...'
-     Install-Module PSWindowsUpdate
+     Install-Module -Name NuGet -Force
+     Install-Module -Name PSWindowsUpdate -Force
      'Installing all newest Windows Updates'
      Import-Module -Name PSWindowsUpdate -Force
-     Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot -Verbose
-     Install-WindowsUpdate
+     Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot -Verbose -Force
 
      'Done, remember to restart later!'
 
@@ -350,8 +345,8 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         $HOMEURL = 'https://msshift.webex.com'
         Set-ItemProperty -Path $EdgeSUURL -Name '1' -Value $HomeURL
 
-        'Giving 60 seconds for processes to catch up...'
-        Start-Sleep -Seconds 60
+        'Giving 120 seconds for processes to catch up...'
+        Start-Sleep -Seconds 120
 
         'Blocking services...'
         New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO Connect” -Description “Block DYMO Connect” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action  
@@ -452,6 +447,33 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
              'ZXP-7 files removed!'
         }
         'Temp folder cleaned!'
+
+        'Uninstalling OneDrive...'
+        # Stop OneDrive process if running
+        Stop-Process -Name "OneDrive" -Force
+
+        # Uninstall OneDrive
+        if (Test-Path "$env:SystemRoot\SysWOW64\OneDriveSetup.exe") {
+            & "$env:SystemRoot\SysWOW64\OneDriveSetup.exe" /uninstall
+        } else {
+            & "$env:SystemRoot\System32\OneDriveSetup.exe" /uninstall
+        }
+
+        # Stop Teams process if running
+        Stop-Process -Name "Teams" -Force
+
+        # Remove Teams from current user
+        Remove-Item -Path "$env:AppData\Local\Microsoft\Teams" -Recurse -Force
+
+        # Uninstall Teams
+        $teamsInstallerPath = "$env:ProgramFiles (x86)\Teams Installer\Teams.exe"
+        if (Test-Path $teamsInstallerPath) {
+            & $teamsInstallerPath /uninstall
+        }
+
+        # Run Office uninstall command (you need the ODT setup folder with the config.xml file)
+        cd "C:\Program Files\Common Files\Microsoft Shared\ClickToRun"
+        .\OfficeC2RClient.exe operation Uninstall
 
         Set-Service -Name "AdobeARMservice" -StartupType Disabled
         Set-Service -Name "wuauserv" -StartupType Disabled
