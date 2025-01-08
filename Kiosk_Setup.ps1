@@ -257,8 +257,8 @@ bOpt2=0
     $issContent | Out-File -FilePath $issFilePath -Encoding ascii
     "iss Config File created in Temp folder..."
 
-     'Giving 30 seconds for processes to catch up...'
-     Start-Sleep -Seconds 30
+     'Giving 180 seconds for processes to catch up...'
+     Start-Sleep -Seconds 180
 
      "Launching Hands Free Scanner with silent installer params..."
 
