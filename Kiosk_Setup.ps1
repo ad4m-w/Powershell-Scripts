@@ -1,5 +1,5 @@
 # Created By Adam Waszczyszak
-# Version 1.2
+# Version 1.3
 
 $host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
@@ -120,9 +120,10 @@ if($startMenu -eq 1){
     $NewLocalAdmin = Read-Host "New local admin username:"
     $Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
     Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
-    'Saving new account credentials to C drive, please delete if no longer needed.'
-    $outputAccount = '$NewLocalAdmin : $Password'
-    $outputAccount | Out-File -FilePath C:\account.txt
+    'Saving new account credentials to Desktop, please delete if no longer needed.'
+    $outputAccount = "$NewLocalAdmin : $Password"
+    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
+    $outputAccount | Out-File -FilePath "$desktopPath\account.txt"
     Read-Host -Prompt "Press Enter to sign out..."
     shutdown /l
     exit 
@@ -166,7 +167,7 @@ if($startMenu -eq 2){
      Install-Module -Name PSWindowsUpdate -Force
      'Installing all newest Windows Updates'
      Import-Module -Name PSWindowsUpdate -Force
-     Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot -Verbose -Force
+     Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot -Verbose
 
      'Done, remember to restart later!'
 
@@ -220,27 +221,58 @@ if($startMenu -eq 2){
      $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/c862d6fc-fc72-4e77-8347-ab079c8d4fa3"
      # Extract the text content from the parsed HTML
      $text = $response.ParsedHtml.body.innerText
-
-     'Giving 120 seconds for processes to catch up...'
-     Start-Sleep -Seconds 120
-
      'Downloading driver...'
 
      $Destination = "C:\Temp\Zebra_CoreScanner_Driver.exe" 
      Invoke-WebRequest -Uri $text -OutFile $Destination
-     "Launching Hands Free Scanner with silent installer params..."
-     Start-Process -FilePath "C:\Temp\Zebra_CoreScanner_Driver.exe" -ArgumentList "/S", "/v/qn"
-     "Success!"
-
      'Downloading Kiosk PDF...'
 
-     $Destination = "C:\Temp\KioskPDF.pdf" 
+     $Destination = "C:\Temp\Kiosk Configs.pdf" 
      Invoke-WebRequest -Uri $text -OutFile $Destination
     # Retrieve the HTML content of the website
     $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/0958c824-3f1e-42b3-89d1-c29a88efe9c2"
     # Extract the text content from the parsed HTML
-    $text = $response.ParsedHtml.body.innerText  
-    
+    $text = $response.ParsedHtml.body.innerText
+
+$issContent = @"
+[{C96D0CF9-799F-4332-81FF-130C0F58AB0C}-DlgOrder]
+Dlg0={C96D0CF9-799F-4332-81FF-130C0F58AB0C}-SdWelcome-0
+Count=4
+Dlg1={C96D0CF9-799F-4332-81FF-130C0F58AB0C}-SetupType2-0
+Dlg2={C96D0CF9-799F-4332-81FF-130C0F58AB0C}-SdStartCopy2-0
+Dlg3={C96D0CF9-799F-4332-81FF-130C0F58AB0C}-SdFinish-0
+[{C96D0CF9-799F-4332-81FF-130C0F58AB0C}-SdWelcome-0]
+Result=1
+[{C96D0CF9-799F-4332-81FF-130C0F58AB0C}-SetupType2-0]
+Result=304
+[{C96D0CF9-799F-4332-81FF-130C0F58AB0C}-SdStartCopy2-0]
+Result=1
+[{C96D0CF9-799F-4332-81FF-130C0F58AB0C}-SdFinish-0]
+Result=1
+bOpt1=0
+bOpt2=0
+"@
+
+    $issFilePath = "C:\Temp\custom.iss"
+    $issContent | Out-File -FilePath $issFilePath -Encoding ascii
+    "iss Config File created in Temp folder..."
+
+     'Giving 30 seconds for processes to catch up...'
+     Start-Sleep -Seconds 30
+
+     "Launching Hands Free Scanner with silent installer params..."
+
+	# Define the path to the executable and the parameters
+	$exePath = "C:\Temp\Zebra_CoreScanner_Driver.exe"   
+	$issFilePath = "C:\Temp\custom.iss"
+
+	# Launch the CMD and run the zebra.exe with the specified arguments
+	Start-Process "cmd.exe" -ArgumentList "/c", "$exePath -s -f1`"$issFilePath`""
+
+	Write-Host "CMD launched with Zebra Installer and arguments."
+
+    "Success!"
+
     'Parsing download site...'
 
     # Retrieve the HTML content of the website
@@ -253,11 +285,14 @@ if($startMenu -eq 2){
     $Destination = "C:\Temp\DCDSetup1.4.5.1.exe" 
     Invoke-WebRequest -Uri $text -OutFile $Destination
 
+    'Giving 45 seconds for processes to catch up...'
+    Start-Sleep -Seconds 45
+
     "Launching DYMO 550 driver with silent installer params..."
     Start-Process -FilePath "C:\Temp\DCDSetup1.4.5.1.exe" -ArgumentList "/S", "/v/qn"
     "Success!"
 
-    'Parsing download site...'
+    'Parsing download site for Kiosk App...'
             
     # Retrieve the HTML content of the website
     $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/6ffe0dbd-c7cd-4206-a960-b2231fd4bd34"
@@ -266,23 +301,38 @@ if($startMenu -eq 2){
 
     'Downloading...'
        
-    $Destination = "C:\Temp\kiosk.zip" 
+    $Destination = "C:\Temp\kiosk.zip"
     Invoke-WebRequest -Uri $text -OutFile $Destination
-    'Uncompressing...'
-    Expand-Archive -LiteralPath 'C:\Temp\kiosk.zip' -DestinationPath C:\
-    
-    'Adding Kiosk Shortcut to Desktop'
-    $TargetFile = "C:\v2.4_14vp\ms.Visitors.Kiosk.exe"  
-    $ShortcutFile = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"  
-    $WshShell = New-Object -ComObject WScript.Shell 
+    Write-Host 'Uncompressing...'
+    Expand-Archive -LiteralPath $Destination -DestinationPath "C:\"
+
+    'Parsing download site for Kiosk.ico...'
+            
+    # Retrieve the HTML content of the website
+    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/c55f283e-e94a-4a21-8b04-4b6cd16574b2"
+    # Extract the text content from the parsed HTML
+    $text = $response.ParsedHtml.body.innerText
+
+    'Downloading...'
+
+    $Destination = "C:\Temp\kiosk.ico"
+    Invoke-WebRequest -Uri $text -OutFile $Destination
+    Write-Host 'Adding Kiosk Shortcut to Desktop'
+    $TargetFile = "C:\v2.4_14vp\ms.Visitors.Kiosk.exe"
+    $ShortcutFile = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"
+
+    $WshShell = New-Object -ComObject WScript.Shell
     $Shortcut = $WshShell.CreateShortcut($ShortcutFile)
+
     $Shortcut.TargetPath = $TargetFile
+    $Shortcut.IconLocation = "C:\Temp\kiosk.ico" 
     $Shortcut.Save()
-    'Adding to startup...'
+    Write-Host 'Adding to startup...'
+
     $shortcutPath = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"
     $startupPath = [Environment]::GetFolderPath("Startup")
-    Copy-Item $shortcutPath -Destination $startupPath 
-    'Added to startup!'
+    Copy-Item $shortcutPath -Destination $startupPath
+    Write-Host 'Added to startup!'
 
     'Disabling Rear Camera...'
     Get-PnpDevice -FriendlyName "*Microsoft Camera Rear*" | Disable-PnpDevice -Confirm:$false
@@ -459,21 +509,14 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
             & "$env:SystemRoot\System32\OneDriveSetup.exe" /uninstall
         }
 
-        # Stop Teams process if running
-        Stop-Process -Name "Teams" -Force
-
-        # Remove Teams from current user
-        Remove-Item -Path "$env:AppData\Local\Microsoft\Teams" -Recurse -Force
-
-        # Uninstall Teams
-        $teamsInstallerPath = "$env:ProgramFiles (x86)\Teams Installer\Teams.exe"
-        if (Test-Path $teamsInstallerPath) {
-            & $teamsInstallerPath /uninstall
-        }
-
         # Run Office uninstall command (you need the ODT setup folder with the config.xml file)
         cd "C:\Program Files\Common Files\Microsoft Shared\ClickToRun"
         .\OfficeC2RClient.exe operation Uninstall
+
+        # Steps to kill Explorer, and remove pinned items from Taskbar
+        Stop-Process -Name explorer -Force
+        Remove-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" -Recurse -Force
+        Start-Process explorer
 
         Set-Service -Name "AdobeARMservice" -StartupType Disabled
         Set-Service -Name "wuauserv" -StartupType Disabled
@@ -925,26 +968,6 @@ while($MenuChoice -ne 'X'){
         }
 
         if($MenuChoice -eq 11){
-            Console-Reset
-            "Manually input the old port number"
-            $content = Get-Content "C:\Program Files (x86)\MS Shift Inc\MS Shift DevicesAPI\MSShift.DevicesAPI.exe.config"
-            'Current API Port #: '
-            (Get-Content -Path "C:\Program Files (x86)\MS Shift Inc\MS Shift DevicesAPI\MSShift.DevicesAPI.exe.config" -TotalCount 55)[-1]
-            $oldPort = Read-Host "Old Port Number"            
-            $newPort = Read-Host "New Port Number"
-            $content = $content -replace "$oldPort", "$newPort"
-            Set-Content "C:\Program Files (x86)\MS Shift Inc\MS Shift DevicesAPI\MSShift.DevicesAPI.exe.config" -Value $content
-            "Changed API port to: $newPort"
-
-        }
-        if($MenuChoice -eq 12){
-            Console-Reset
-            'Launching print server'
-            rundll32 printui.dll, PrintUIEntry /s 
-
-        }
-
-        if($MenuChoice -eq 13){
 
             Console-Reset
 
@@ -967,154 +990,8 @@ while($MenuChoice -ne 'X'){
             Remove-Item $tempFile.FullName           
 
         }
-
-        if($MenuChoice -eq 14){          
-
-            MenuMaker -Selections 'API', 
-            'Adobe', 
-            'Signature Pad', 
-            'HF Scanner (DS8101) + PDFs',
-            'HF Scanner (DS6707) + PDFs',
-            'LX 500 driver',
-            'DYMO 550 driver',
-            'DYMO 450 driver',
-            'GK420d driver',
-            'ZD421/420 driver',
-            'ZXP-7 driver' -Title 'Choose a Driver' -IncludeExit
-
-            $CopyLink = Read-Host "Please Choose a Driver"  
-         
-            While($CopyLink -ne 'X'){
-            
-                if($CopyLink -eq 1){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/e2d06108-8cc8-4705-a316-54463dc1d78f"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-                if($CopyLink -eq 2){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/5da99203-21ba-4aa2-93e6-a60a8a0b3ae3"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-                if($CopyLink -eq 3){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/e43d957b-0b20-4422-a3d0-a114162c5dfe"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-
-                if($CopyLink -eq 4){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/c862d6fc-fc72-4e77-8347-ab079c8d4fa3"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-
-                if($CopyLink -eq 5){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/c862d6fc-fc72-4e77-8347-ab079c8d4fa3"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-
-                if($CopyLink -eq 6){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/7ebdd547-4c3c-4dc4-8639-e0ce88c1f60c"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-                if($CopyLink -eq 7){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/1ab37806-4228-4eb1-8178-1ba492b0ea0f"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-                if($CopyLink -eq 8){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/2f89909d-4539-446b-a76c-1ff7f47954aa"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-
-                if($CopyLink -eq 9){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/2923c379-b7a0-4506-9c28-4ea5b2c0e48c"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-
-                if($CopyLink -eq 10){
-
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/75b8f783-51f0-4a8a-9128-bf6957480aa4"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-                if($CopyLink -eq 11){
-                
-                    # Retrieve the HTML content of the website
-                    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/7cc7f865-5107-4f8b-9f3e-617b8ca23802"
-                    # Extract the text content from the parsed HTML
-                    $text = $response.ParsedHtml.body.innerText
-                    Set-Clipboard -Value "$text"
-                    'Driver download link copied to clipboard'
-                    
-                }
-
-            $CopyLink = Read-Host "Choose another download menu option" 
-            }
-        }
-
-        if($MenuChoice -eq 15){
-            Console-Reset
-            'Removing the Document.pdf (existing badge PDF)'
-            Remove-Item "C:\Temp\Document.pdf" -Confirm
-            'PDF deleted!'
-
-        }
         
-        if($MenuChoice -eq 16){
+        if($MenuChoice -eq 12){
             Console-Reset
             'Removing all drivers...'
 
@@ -1195,7 +1072,7 @@ while($MenuChoice -ne 'X'){
 
         }
 
-        if($MenuChoice -eq 17){
+        if($MenuChoice -eq 13){
             
             Console-Reset
 
@@ -1217,7 +1094,7 @@ while($MenuChoice -ne 'X'){
             Get-ScheduledTask -TaskPath '\Microsoft\Windows\WindowsUpdate\'  | Disable-ScheduledTask -ErrorAction SilentlyContinue
         }
 
-        if($MenuChoice -eq 18){
+        if($MenuChoice -eq 14){
             Clear-Host
             MenuMaker -Selections 'Download and Install API', #1
             'Download and Install Adobe',  #2
@@ -1348,7 +1225,7 @@ while($MenuChoice -ne 'X'){
                 Invoke-WebRequest -Uri $text -OutFile $Destination
 
                 "Launching Hands Free Scanner with silent installer params..."
-                Start-Process -FilePath "C:\Temp\Zebra123_CoreScanner_Driver.exe" -ArgumentList "/S", "/v/qn"
+                Start-Process -FilePath "C:\Temp\Zebra123_CoreScanner_Driver.exe" -ArgumentList "-s", "-f1"
                 "Success!"
 
             }
@@ -1399,7 +1276,7 @@ while($MenuChoice -ne 'X'){
             Print-Menu
         }
 
-        if($MenuChoice -eq 19){
+        if($MenuChoice -eq 15){
 
 # Contents of the batch and VBS file. 
 
