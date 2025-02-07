@@ -1,5 +1,5 @@
 # Created By Adam Waszczyszak
-# Version 1.4
+# Version 1.5
 
 $host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
@@ -165,12 +165,12 @@ if($startMenu -eq 2){
 
      "Permissions for Temp and Visitor_Pics Set!"
 
-     'Installing PS Module...'
-     Install-Module -Name NuGet -Force
-     Install-Module -Name PSWindowsUpdate -Force
-     'Installing all newest Windows Updates'
-     Import-Module -Name PSWindowsUpdate -Force
-     Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot -Verbose
+    'Installing Windows Update PS Module...'
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+    Install-Module -Name PSWindowsUpdate -Force
+    'Installing all newest Windows Updates'
+    Import-Module -Name PSWindowsUpdate -Force
+    Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot -Verbose
 
      'Done, remember to restart later!'
 
