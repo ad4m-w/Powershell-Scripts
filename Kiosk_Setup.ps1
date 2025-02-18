@@ -142,12 +142,12 @@ if($startMenu -eq 2){
          New-Item -Path C:\Temp -ItemType Directory
      }
 
-     if (Test-Path -Path C:\Visitor_pic){
+     if (Test-Path -Path C:\Visitor_Pic){
          "Visitor_Pic Folder Already Exists"
      }
 
      else{
-         New-Item -Path C:\Visitor_pic -ItemType Directory
+         New-Item -Path C:\Visitor_Pic -ItemType Directory
      }
 
      'Folders Created.'
@@ -158,10 +158,10 @@ if($startMenu -eq 2){
      Set-Acl -Path C:\Temp\ -AclObject $path
 
 
-     $path=Get-Acl -Path C:\Visitor_pic
+     $path=Get-Acl -Path C:\Visitor_Pic
      $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
      $path.setaccessrule($acl)
-     Set-Acl -Path C:\Visitor_pic\ -AclObject $path
+     Set-Acl -Path C:\Visitor_Pic\ -AclObject $path
 
      "Permissions for Temp and Visitor_Pics Set!"
 
@@ -533,7 +533,7 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
 if($startMenu -eq 3){
 # Function for the Menu creation
 function Print-Menu{
-    MenuMaker -Selections 'Create Temp and Visitor_pics Folders', #1
+    MenuMaker -Selections 'Create Temp and Visitor_Pics Folders', #1
     'Set Temp and Visitor_Pics Permissions', #2
     'Set PTI Folder Permissions', #3
     'Block DYMO Updates', #4
@@ -583,12 +583,12 @@ while($MenuChoice -ne 'X'){
                 New-Item -Path C:\Temp -ItemType Directory
             }
 
-            if (Test-Path -Path C:\Visitor_pic){
+            if (Test-Path -Path C:\Visitor_Pic){
                 "Visitor_Pic Folder Already Exists"
             }
 
             else{
-                New-Item -Path C:\Visitor_pic -ItemType Directory
+                New-Item -Path C:\Visitor_Pic -ItemType Directory
             }
         }
 
@@ -601,10 +601,10 @@ while($MenuChoice -ne 'X'){
             Set-Acl -Path C:\Temp\ -AclObject $path
 
 
-            $path=Get-Acl -Path C:\Visitor_pic
+            $path=Get-Acl -Path C:\Visitor_Pic
             $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
             $path.setaccessrule($acl)
-            Set-Acl -Path C:\Visitor_pic\ -AclObject $path
+            Set-Acl -Path C:\Visitor_Pic\ -AclObject $path
 
             "Permissions for Temp and Visitor_Pics Set!"
     }
