@@ -103,33 +103,50 @@ if($startMenu -eq 1){
 
     #Paolo Frigo, https://www.scriptinglibrary.com
 
-    function Create-NewLocalAdmin {
-        [CmdletBinding()]
-        param (
-            [string] $NewLocalAdmin,
-            [securestring] $Password
-        )    
-        begin {
-        }    
-        process {
-            New-LocalUser "$NewLocalAdmin" -Password $Password -FullName "$NewLocalAdmin" -Description "Property Admin Account"
-            Write-Verbose "$NewLocalAdmin local user created"
-            Add-LocalGroupMember -Group "Administrators" -Member "$NewLocalAdmin"
-            Write-Verbose "$NewLocalAdmin added to the local administrator group"
-        }    
-        end {
-        }
+function Create-NewLocalAdmin {
+    [CmdletBinding()]
+    param (
+        [string] $NewLocalAdmin,
+        [securestring] $Password
+    )    
+    begin {
+    }    
+    process {
+        # Convert SecureString to PlainText
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
+        $PlainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+
+        # Create the new local user
+        New-LocalUser -Name "$NewLocalAdmin" -Password (ConvertTo-SecureString -AsPlainText $PlainPassword -Force) -FullName "$NewLocalAdmin" -Description "Property Admin Account"
+        Write-Verbose "$NewLocalAdmin local user created"
+
+        # Add user to the Administrators group
+        Add-LocalGroupMember -Group "Administrators" -Member "$NewLocalAdmin"
+        Write-Verbose "$NewLocalAdmin added to the local administrator group"
+    }    
+    end {
     }
-    $NewLocalAdmin = Read-Host "New local admin username:"
-    $Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
-    Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
-    'Saving new account credentials to Desktop, please delete if no longer needed.'
-    $outputAccount = "$NewLocalAdmin : $Password"
-    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
-    $outputAccount | Out-File -FilePath "$desktopPath\account.txt"
-    Read-Host -Prompt "Press Enter to sign out..."
-    shutdown /l
-    exit 
+}
+
+# Get user input for the new admin username and password
+$NewLocalAdmin = Read-Host "New local admin username:"
+$Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
+
+# Call the function to create the new local admin
+Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
+
+# Save the new account credentials to a file
+'Saving new account credentials to Desktop, please delete if no longer needed.'
+$outputAccount = "$NewLocalAdmin : $Password"
+$desktopPath = [System.Environment]::GetFolderPath('Desktop')
+$outputAccount | Out-File -FilePath "$desktopPath\account.txt"
+
+# Prompt user to press Enter to sign out
+Read-Host -Prompt "Press Enter to sign out..."
+
+# Log off the current user
+shutdown /l
+exit
 }
 
 if($startMenu -eq 2){
