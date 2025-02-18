@@ -103,50 +103,33 @@ if($startMenu -eq 1){
 
     #Paolo Frigo, https://www.scriptinglibrary.com
 
-function Create-NewLocalAdmin {
-    [CmdletBinding()]
-    param (
-        [string] $NewLocalAdmin,
-        [securestring] $Password
-    )    
-    begin {
-    }    
-    process {
-        # Convert SecureString to PlainText
-        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
-        $PlainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-
-        # Create the new local user
-        New-LocalUser -Name "$NewLocalAdmin" -Password (ConvertTo-SecureString -AsPlainText $PlainPassword -Force) -FullName "$NewLocalAdmin" -Description "Property Admin Account"
-        Write-Verbose "$NewLocalAdmin local user created"
-
-        # Add user to the Administrators group
-        Add-LocalGroupMember -Group "Administrators" -Member "$NewLocalAdmin"
-        Write-Verbose "$NewLocalAdmin added to the local administrator group"
-    }    
-    end {
+    function Create-NewLocalAdmin {
+        [CmdletBinding()]
+        param (
+            [string] $NewLocalAdmin,
+            [securestring] $Password
+        )    
+        begin {
+        }    
+        process {
+            New-LocalUser "$NewLocalAdmin" -Password $Password -FullName "$NewLocalAdmin" -Description "Property Admin Account"
+            Write-Verbose "$NewLocalAdmin local user created"
+            Add-LocalGroupMember -Group "Administrators" -Member "$NewLocalAdmin"
+            Write-Verbose "$NewLocalAdmin added to the local administrator group"
+        }    
+        end {
+        }
     }
-}
-
-# Get user input for the new admin username and password
-$NewLocalAdmin = Read-Host "New local admin username:"
-$Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
-
-# Call the function to create the new local admin
-Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
-
-# Save the new account credentials to a file
-'Saving new account credentials to Desktop, please delete if no longer needed.'
-$outputAccount = "$NewLocalAdmin : $Password"
-$desktopPath = [System.Environment]::GetFolderPath('Desktop')
-$outputAccount | Out-File -FilePath "$desktopPath\account.txt"
-
-# Prompt user to press Enter to sign out
-Read-Host -Prompt "Press Enter to sign out..."
-
-# Log off the current user
-shutdown /l
-exit
+    $NewLocalAdmin = Read-Host "New local admin username:"
+    $Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
+    Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
+    'Saving new account credentials to Desktop, please delete if no longer needed.'
+    $outputAccount = "$NewLocalAdmin : $Password"
+    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
+    $outputAccount | Out-File -FilePath "$desktopPath\account.txt"
+    Read-Host -Prompt "Press Enter to sign out..."
+    shutdown /l
+    exit 
 }
 
 if($startMenu -eq 2){
@@ -159,12 +142,12 @@ if($startMenu -eq 2){
          New-Item -Path C:\Temp -ItemType Directory
      }
 
-     if (Test-Path -Path C:\Visitor_Pic){
+     if (Test-Path -Path C:\Visitor_pic){
          "Visitor_Pic Folder Already Exists"
      }
 
      else{
-         New-Item -Path C:\Visitor_Pic -ItemType Directory
+         New-Item -Path C:\Visitor_pic -ItemType Directory
      }
 
      'Folders Created.'
@@ -175,10 +158,10 @@ if($startMenu -eq 2){
      Set-Acl -Path C:\Temp\ -AclObject $path
 
 
-     $path=Get-Acl -Path C:\Visitor_Pic
+     $path=Get-Acl -Path C:\Visitor_pic
      $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
      $path.setaccessrule($acl)
-     Set-Acl -Path C:\Visitor_Pic\ -AclObject $path
+     Set-Acl -Path C:\Visitor_pic\ -AclObject $path
 
      "Permissions for Temp and Visitor_Pics Set!"
 
@@ -550,7 +533,7 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
 if($startMenu -eq 3){
 # Function for the Menu creation
 function Print-Menu{
-    MenuMaker -Selections 'Create Temp and Visitor_Pics Folders', #1
+    MenuMaker -Selections 'Create Temp and Visitor_pics Folders', #1
     'Set Temp and Visitor_Pics Permissions', #2
     'Set PTI Folder Permissions', #3
     'Block DYMO Updates', #4
@@ -600,12 +583,12 @@ while($MenuChoice -ne 'X'){
                 New-Item -Path C:\Temp -ItemType Directory
             }
 
-            if (Test-Path -Path C:\Visitor_Pic){
+            if (Test-Path -Path C:\Visitor_pic){
                 "Visitor_Pic Folder Already Exists"
             }
 
             else{
-                New-Item -Path C:\Visitor_Pic -ItemType Directory
+                New-Item -Path C:\Visitor_pic -ItemType Directory
             }
         }
 
@@ -618,10 +601,10 @@ while($MenuChoice -ne 'X'){
             Set-Acl -Path C:\Temp\ -AclObject $path
 
 
-            $path=Get-Acl -Path C:\Visitor_Pic
+            $path=Get-Acl -Path C:\Visitor_pic
             $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
             $path.setaccessrule($acl)
-            Set-Acl -Path C:\Visitor_Pic\ -AclObject $path
+            Set-Acl -Path C:\Visitor_pic\ -AclObject $path
 
             "Permissions for Temp and Visitor_Pics Set!"
     }
