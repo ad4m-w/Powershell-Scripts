@@ -9,6 +9,6 @@
 1.   Open PowerShell as Admin
 2.   Copy and paste the code below and press enter 
 ```
-irm irm https://raw.githubusercontent.com/ad4m-w/shift_kiosk/refs/heads/main/Kiosk_Setup.ps1 | iex
+irm https://raw.githubusercontent.com/ad4m-w/MS_Shift_Kiosk_Script/refs/heads/main/Kiosk_Setup.ps1 | iex
 ```
 
