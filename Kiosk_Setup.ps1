@@ -1,5 +1,5 @@
 # Created By Adam Waszczyszak
-# Version 1.5
+# Version 1.6
 
 $host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
@@ -142,12 +142,12 @@ if($startMenu -eq 2){
          New-Item -Path C:\Temp -ItemType Directory
      }
 
-     if (Test-Path -Path C:\Visitor_Pic){
+     if (Test-Path -Path C:\Visitor_pic){
          "Visitor_Pic Folder Already Exists"
      }
 
      else{
-         New-Item -Path C:\Visitor_Pic -ItemType Directory
+         New-Item -Path C:\Visitor_pic -ItemType Directory
      }
 
      'Folders Created.'
@@ -158,10 +158,10 @@ if($startMenu -eq 2){
      Set-Acl -Path C:\Temp\ -AclObject $path
 
 
-     $path=Get-Acl -Path C:\Visitor_Pic
+     $path=Get-Acl -Path C:\Visitor_pic
      $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
      $path.setaccessrule($acl)
-     Set-Acl -Path C:\Visitor_Pic\ -AclObject $path
+     Set-Acl -Path C:\Visitor_pic\ -AclObject $path
 
      "Permissions for Temp and Visitor_Pics Set!"
 
@@ -424,96 +424,14 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         'Disable scheduled task'
         Get-ScheduledTask -TaskPath '\Microsoft\Windows\WindowsUpdate\'  | Disable-ScheduledTask -ErrorAction SilentlyContinue
 
-        'Removing all drivers...'
+        'Removing all drivers from Temp Folder...'
 
-        if(Test-Path "C:\Temp\kiosk.zip" ){
-             Remove-Item "C:\Temp\kiosk.zip"
-            'Kiosk files deleted!'
-        }
-
-        if(Test-Path "C:\Temp\MSShift.DevicesAPI.Setup.NEW.msi"){
-             Remove-Item "C:\Temp\MSShift.DevicesAPI.Setup.NEW.msi"
-        }
-
-        if(Test-Path "C:\Temp\adobe.exe"){
-             Remove-Item "C:\Temp\adobe.exe"
-             'Adobe files removed!'
-        }
-
-        if(Test-Path "C:\Temp\sigplus_.exe"){
-             Remove-Item "C:\Temp\sigplus_.exe"
-             'Signature Pads files removed!'
-        }
-
-        if(Test-Path "C:\Temp\Zebra_CoreScanner_Driver.exe"){
-             Remove-Item "C:\Temp\Zebra_CoreScanner_Driver.exe"
-             'Scanner files removed!'
-        }
-
-        if(Test-Path "C:\Temp\Restore Default.pdf"){
-             Remove-Item "C:\Temp\Restore Default.pdf"
-             'PDFs Removed!'
-        }
-
-        if(Test-Path "C:\Temp\KioskPDF.pdf"){
-             Remove-Item "C:\Temp\KioskPDF.pdf"
-        }
-
-        if(Test-Path "C:\Temp\Zebra123_CoreScanner_Driver.exe" ){
-             Remove-Item "C:\Temp\Zebra123_CoreScanner_Driver.exe"
-             'Scanner files removed!'
-        }
-
-        if(Test-Path "C:\Temp\Primera.2.3.1.exe"){
-             Remove-Item "C:\Temp\Primera.2.3.1.exe"  
-             'LX 500 files removed!'
-        }
-
-        if(Test-Path "C:\Temp\DCDSetup1.4.5.1.exe"){
-             Remove-Item "C:\Temp\DCDSetup1.4.5.1.exe"
-             'DYMO files removed!'  
-        }
-
-        
-        if(Test-Path "C:\Temp\DCDSetup1.3.2.18.exe"){
-             Remove-Item "C:\Temp\DCDSetup1.3.2.18.exe"  
-             'DYMO files removed!'
-        }
-                    
-        if(Test-Path "C:\Temp\zd51.exe"){
-             Remove-Item "C:\Temp\zd51.exe"  
-             'ZD files removed!'
-        }
-
-        if(Test-Path "C:\Temp\zd.exe"){
-             Remove-Item "C:\Temp\zd.exe"  
-             'ZD files removed!'
-        }
-
-        if(Test-Path "C:\Temp\zd105.exe"){
-             Remove-Item "C:\Temp\zd105.exe" 
-             'ZD files removed!' 
-        }
-
-        if(Test-Path "C:\Temp\ZXP73.0.2.exe"){
-             Remove-Item "C:\Temp\ZXP73.0.2.exe"  
-             'ZXP-7 files removed!'
-        }
+        Get-ChildItem "C:\Temp\" -Recurse | Remove-Item -Force -Verbose
+    
         'Temp folder cleaned!'
 
-        'Uninstalling OneDrive...'
-        # Stop OneDrive process if running
-        Stop-Process -Name "OneDrive" -Force
-
-        # Uninstall OneDrive
-        if (Test-Path "$env:SystemRoot\SysWOW64\OneDriveSetup.exe") {
-            & "$env:SystemRoot\SysWOW64\OneDriveSetup.exe" /uninstall
-        } else {
-            & "$env:SystemRoot\System32\OneDriveSetup.exe" /uninstall
-        }
-
         # Run Office uninstall command (you need the ODT setup folder with the config.xml file)
-        cd "C:\Program Files\Common Files\Microsoft Shared\ClickToRun"
+        Set-Location "C:\Program Files\Common Files\Microsoft Shared\ClickToRun"
         .\OfficeC2RClient.exe operation Uninstall
 
         # Steps to kill Explorer, and remove pinned items from Taskbar
@@ -521,8 +439,14 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         Remove-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" -Recurse -Force
         Start-Process explorer
 
+        sc.exe stop AdobeARMservice
         Set-Service -Name "AdobeARMservice" -StartupType Disabled
-        Set-Service -Name "wuauserv" -StartupType Disabled
+        sc.exe query wuauserv
+        sc.exe stop wuauserv
+        sc.exe config wuauserv start=disabled
+        # Disabled scheduled task
+        'Disable scheduled task'
+        Get-ScheduledTask -TaskPath '\Microsoft\Windows\WindowsUpdate\'  | Disable-ScheduledTask -ErrorAction SilentlyContinue
         'Adobe and Windows Updates blocked in Services.'
 
         'Deleting Local MS Shift User'
@@ -533,7 +457,7 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
 if($startMenu -eq 3){
 # Function for the Menu creation
 function Print-Menu{
-    MenuMaker -Selections 'Create Temp and Visitor_Pics Folders', #1
+    MenuMaker -Selections 'Create Temp and Visitor_pics Folders', #1
     'Set Temp and Visitor_Pics Permissions', #2
     'Set PTI Folder Permissions', #3
     'Block DYMO Updates', #4
@@ -583,12 +507,12 @@ while($MenuChoice -ne 'X'){
                 New-Item -Path C:\Temp -ItemType Directory
             }
 
-            if (Test-Path -Path C:\Visitor_Pic){
+            if (Test-Path -Path C:\Visitor_pic){
                 "Visitor_Pic Folder Already Exists"
             }
 
             else{
-                New-Item -Path C:\Visitor_Pic -ItemType Directory
+                New-Item -Path C:\Visitor_pic -ItemType Directory
             }
         }
 
@@ -601,10 +525,10 @@ while($MenuChoice -ne 'X'){
             Set-Acl -Path C:\Temp\ -AclObject $path
 
 
-            $path=Get-Acl -Path C:\Visitor_Pic
+            $path=Get-Acl -Path C:\Visitor_pic
             $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
             $path.setaccessrule($acl)
-            Set-Acl -Path C:\Visitor_Pic\ -AclObject $path
+            Set-Acl -Path C:\Visitor_pic\ -AclObject $path
 
             "Permissions for Temp and Visitor_Pics Set!"
     }
@@ -628,7 +552,8 @@ while($MenuChoice -ne 'X'){
             "Services Blocked using the Firewall!"
         }
         if($MenuChoice -eq 5){
-            Console-Reset
+
+            sc.exe stop AdobeARMservice
             Set-Service -Name "AdobeARMservice" -StartupType Disabled
 
             "Adobe Update Services Blocked In Services.msc"
@@ -995,82 +920,13 @@ while($MenuChoice -ne 'X'){
         }
         
         if($MenuChoice -eq 12){
+
             Console-Reset
-            'Removing all drivers...'
 
-            if(Test-Path "C:\Temp\api.zip" ){
-                 Remove-Item "C:\Temp\api.zip"
-                'API files deleted!'
-            }
+            'Removing all drivers from Temp Folder...'
 
-            if(Test-Path "C:\Temp\MSShift.DevicesAPI.Setup.NEW.msi"){
-                 Remove-Item "C:\Temp\MSShift.DevicesAPI.Setup.NEW.msi"
-            }
-
-            if(Test-Path "C:\Temp\adobe.exe"){
-                 Remove-Item "C:\Temp\adobe.exe"
-                 'Adobe files removed!'
-            }
-
-            if(Test-Path "C:\Temp\sigplus_.exe"){
-                 Remove-Item "C:\Temp\sigplus_.exe"
-                 'Signature Pads files removed!'
-            }
-
-            if(Test-Path "C:\Temp\Zebra_CoreScanner_Driver.exe"){
-                 Remove-Item "C:\Temp\Zebra_CoreScanner_Driver.exe"
-                 'Scanner files removed!'
-            }
-
-            if(Test-Path "C:\Temp\Restore Default.pdf"){
-                 Remove-Item "C:\Temp\Restore Default.pdf"
-                 'PDFs Removed!'
-            }
-
-            if(Test-Path "C:\Temp\ScanX_Config_Codebar.pdf"){
-                 Remove-Item "C:\Temp\ScanX_Config_Codebar.pdf"
-            }
-
-            if(Test-Path "C:\Temp\Zebra123_CoreScanner_Driver.exe" ){
-                 Remove-Item "C:\Temp\Zebra123_CoreScanner_Driver.exe"
-                 'Scanner files removed!'
-            }
-
-            if(Test-Path "C:\Temp\Primera.2.3.1.exe"){
-                 Remove-Item "C:\Temp\Primera.2.3.1.exe"  
-                 'LX 500 files removed!'
-            }
-
-            if(Test-Path "C:\Temp\DCDSetup1.4.5.1.exe"){
-                 Remove-Item "C:\Temp\DCDSetup1.4.5.1.exe"
-                 'DYMO files removed!'  
-            }
-
-            
-            if(Test-Path "C:\Temp\DCDSetup1.3.2.18.exe"){
-                 Remove-Item "C:\Temp\DCDSetup1.3.2.18.exe"  
-                 'DYMO files removed!'
-            }
-                        
-            if(Test-Path "C:\Temp\zd51.exe"){
-                 Remove-Item "C:\Temp\zd51.exe"  
-                 'ZD files removed!'
-            }
-
-            if(Test-Path "C:\Temp\zd.exe"){
-                 Remove-Item "C:\Temp\zd.exe"  
-                 'ZD files removed!'
-            }
-
-            if(Test-Path "C:\Temp\zd105.exe"){
-                 Remove-Item "C:\Temp\zd105.exe" 
-                 'ZD files removed!' 
-            }
-
-            if(Test-Path "C:\Temp\ZXP73.0.2.exe"){
-                 Remove-Item "C:\Temp\ZXP73.0.2.exe"  
-                 'ZXP-7 files removed!'
-            }
+            Get-ChildItem "C:\Temp\" -Recurse | Remove-Item -Force -Verbose
+        
             'Temp folder cleaned!'
 
         }
