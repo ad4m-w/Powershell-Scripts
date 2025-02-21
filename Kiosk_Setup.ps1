@@ -1,5 +1,5 @@
 # Created By Adam Waszczyszak
-# Version 1.6
+# Version 2.0
 
 $host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
@@ -101,6 +101,26 @@ $startMenu = Read-Host "Automatic or Manual"
 
 if($startMenu -eq 1){
 
+    if (Test-Path -Path C:\Temp){
+        "Temp Folder Already Exists"
+       }
+   
+        else{
+            New-Item -Path C:\Temp -ItemType Directory
+        }
+   
+        if (Test-Path -Path C:\Visitor_Pic){
+            "Visitor_Pic Folder Already Exists"
+        }
+   
+        else{
+            New-Item -Path C:\Visitor_Pic -ItemType Directory
+        }
+   
+        'Folders Created.'
+        
+        Clear-Host
+        
     #Paolo Frigo, https://www.scriptinglibrary.com
 
     function Create-NewLocalAdmin {
@@ -123,10 +143,24 @@ if($startMenu -eq 1){
     $NewLocalAdmin = Read-Host "New local admin username:"
     $Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
     Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
-    'Saving new account credentials to Desktop, please delete if no longer needed.'
-    $outputAccount = "$NewLocalAdmin : $Password"
-    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
-    $outputAccount | Out-File -FilePath "$desktopPath\account.txt"
+
+    $autoPS = @"
+    irm https://raw.githubusercontent.com/ad4m-w/MS_Shift_Kiosk_Script/refs/heads/main/Kiosk_Setup.ps1 | iex
+"@
+    $tempFile = "C:\Temp\auto.txt"
+    $autoPS | Out-File -FilePath $tempFile -Encoding ASCII
+    $newFileName = [System.IO.Path]::ChangeExtension($tempFile, ".ps1")
+    Rename-Item $tempFile $newFileName
+    
+    # Define the action to start a program
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File C:\Temp\auto.ps1 -NoProfile -ExecutionPolicy Bypass"
+
+    # Define the trigger to run daily at a specific time
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+
+    # Register the scheduled task
+    Register-ScheduledTask -TaskName "Auto Kiosk Script" -Action $action -Trigger $trigger
+        
     Read-Host -Prompt "Press Enter to sign out..."
     shutdown /l
     exit 
@@ -135,23 +169,23 @@ if($startMenu -eq 1){
 if($startMenu -eq 2){
 
     if (Test-Path -Path C:\Temp){
-     "Temp Folder Already Exists"
-    }
-
-     else{
-         New-Item -Path C:\Temp -ItemType Directory
-     }
-
-     if (Test-Path -Path C:\Visitor_pic){
-         "Visitor_Pic Folder Already Exists"
-     }
-
-     else{
-         New-Item -Path C:\Visitor_pic -ItemType Directory
-     }
-
-     'Folders Created.'
- 
+        "Temp Folder Already Exists"
+       }
+   
+        else{
+            New-Item -Path C:\Temp -ItemType Directory
+        }
+   
+        if (Test-Path -Path C:\Visitor_Pic){
+            "Visitor_Pic Folder Already Exists"
+        }
+   
+        else{
+            New-Item -Path C:\Visitor_Pic -ItemType Directory
+        }
+   
+        'Folders Created.'
+    
      $path=Get-Acl -Path C:\Temp
      $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
      $path.setaccessrule($acl)
@@ -448,6 +482,21 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         'Disable scheduled task'
         Get-ScheduledTask -TaskPath '\Microsoft\Windows\WindowsUpdate\'  | Disable-ScheduledTask -ErrorAction SilentlyContinue
         'Adobe and Windows Updates blocked in Services.'
+
+    Get-ScheduledTask | ForEach-Object {
+        $task = $_
+        $taskName = $task.TaskName
+        
+        if ($taskName -eq "Auto Kiosk Script") {
+            $runningTask = Get-Process | Where-Object { $_.Path -like "*Auto Kiosk Script*" }
+
+            if ($runningTask) {
+                $runningTask | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
+            }
+            
+            Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+        }
+    }
 
         'Deleting Local MS Shift User'
         Remove-LocalUser -Name "msshi"
