@@ -156,7 +156,7 @@ if($startMenu -eq 1){
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File C:\Temp\auto.ps1 -NoProfile -ExecutionPolicy Bypass"
 
     # Define the trigger to run daily at a specific time
-    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $trigger = New-ScheduledTaskTrigger -AtStartup
 
     # Register the scheduled task
     Register-ScheduledTask -TaskName "Auto Kiosk Script" -Action $action -Trigger $trigger
