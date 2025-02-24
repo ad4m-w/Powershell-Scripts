@@ -143,23 +143,6 @@ if($startMenu -eq 1){
     $NewLocalAdmin = Read-Host "New local admin username:"
     $Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
     Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
-
-    $autoPS = @"
-    irm https://raw.githubusercontent.com/ad4m-w/MS_Shift_Kiosk_Script/refs/heads/main/Kiosk_Setup.ps1 | iex
-"@
-    $tempFile = "C:\Temp\auto.txt"
-    $autoPS | Out-File -FilePath $tempFile -Encoding ASCII
-    $newFileName = [System.IO.Path]::ChangeExtension($tempFile, ".ps1")
-    Rename-Item $tempFile $newFileName
-    
-    # Define the action to start a program
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File C:\Temp\auto.ps1 -NoProfile -ExecutionPolicy Bypass"
-
-    # Define the trigger to run daily at a specific time
-    $trigger = New-ScheduledTaskTrigger -AtStartup
-
-    # Register the scheduled task
-    Register-ScheduledTask -TaskName "Auto Kiosk Script" -Action $action -Trigger $trigger
         
     Read-Host -Prompt "Press Enter to sign out..."
     shutdown /l
