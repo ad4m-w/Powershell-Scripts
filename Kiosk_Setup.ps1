@@ -335,7 +335,7 @@ bOpt2=0
 
     'Downloading...'
 
-    $Destination = "C:\Temp\kiosk.ico"
+    $Destination = "C:\kiosk.ico"
     Invoke-WebRequest -Uri $text -OutFile $Destination
     Write-Host 'Adding Kiosk Shortcut to Desktop'
     $TargetFile = "C:\v2.4_14vp\ms.Visitors.Kiosk.exe"
@@ -345,7 +345,7 @@ bOpt2=0
     $Shortcut = $WshShell.CreateShortcut($ShortcutFile)
 
     $Shortcut.TargetPath = $TargetFile
-    $Shortcut.IconLocation = "C:\Temp\kiosk.ico" 
+    $Shortcut.IconLocation = "C:\kiosk.ico" 
     $Shortcut.Save()
     Write-Host 'Adding to startup...'
 
