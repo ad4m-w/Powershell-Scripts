@@ -1,5 +1,5 @@
 # Created By Adam Waszczyszak
-# Version 2.0
+# Version 2.1
 
 $host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
@@ -143,6 +143,23 @@ if($startMenu -eq 1){
     $NewLocalAdmin = Read-Host "New local admin username:"
     $Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
     Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
+
+    $autoPS = @"
+    irm https://raw.githubusercontent.com/ad4m-w/MS_Shift_Kiosk_Script/refs/heads/main/Kiosk_Setup.ps1 | iex
+"@
+    $tempFile = "C:\Temp\auto.txt"
+    $autoPS | Out-File -FilePath $tempFile -Encoding ASCII
+    $newFileName = [System.IO.Path]::ChangeExtension($tempFile, ".ps1")
+    Rename-Item $tempFile $newFileName
+    
+    # Define the action to start a program
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File C:\Temp\auto.ps1 -NoProfile -ExecutionPolicy Bypass"
+
+    # Define the trigger to run daily at a specific time
+    $trigger = New-ScheduledTaskTrigger -AtStartup
+
+    # Register the scheduled task
+    Register-ScheduledTask -TaskName "Auto Kiosk Script" -Action $action -Trigger $trigger
         
     Read-Host -Prompt "Press Enter to sign out..."
     shutdown /l
@@ -193,6 +210,7 @@ if($startMenu -eq 2){
 
      'Enabling Rotation Lock using Registry.'
      Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AutoRotation -Name Enable -Value 0 -Type DWord
+     reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AutoRotation" /v Enable /t REG_DWORD /d 0 /f
      'Done!'
 
      'Disabling Notifications using Registry.'
@@ -335,19 +353,36 @@ bOpt2=0
 
     'Downloading...'
 
-    $Destination = "C:\kiosk.ico"
+    $Destination = "C:\Temp\kiosk.ico"
     Invoke-WebRequest -Uri $text -OutFile $Destination
     Write-Host 'Adding Kiosk Shortcut to Desktop'
     $TargetFile = "C:\v2.4_14vp\ms.Visitors.Kiosk.exe"
     $ShortcutFile = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"
 
+    # Check if the target file exists
+    if (-Not (Test-Path $TargetFile)) {
+        Write-Host "Error: Target file does not exist at $TargetFile"
+        return
+    }
+
+    # Ensure the Desktop directory exists
+    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
+    if (-Not (Test-Path $desktopPath)) {
+        Write-Host "Error: Desktop directory does not exist."
+        return
+    }
+
+    # Create a shortcut object
     $WshShell = New-Object -ComObject WScript.Shell
     $Shortcut = $WshShell.CreateShortcut($ShortcutFile)
 
+    # Set shortcut properties
     $Shortcut.TargetPath = $TargetFile
-    $Shortcut.IconLocation = "C:\kiosk.ico" 
+    $Shortcut.IconLocation = "C:\Temp\kiosk.ico"  # Adjust if the icon path is different
     $Shortcut.Save()
-    Write-Host 'Adding to startup...'
+
+    Write-Host "Shortcut created at $ShortcutFile"
+
 
     $shortcutPath = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"
     $startupPath = [Environment]::GetFolderPath("Startup")
