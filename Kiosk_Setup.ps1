@@ -1,7 +1,7 @@
 # Created By Adam Waszczyszak
-# Version 2.2
+# Version 2.3
 
-$host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
+$host.ui.RawUI.WindowTitle = “adamwasz.com”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
 # Update local group policy if the bypass does not work.
 # Manually disable S-Mode to allow for scripts to run.
@@ -353,7 +353,7 @@ bOpt2=0
 
     'Downloading...'
 
-    $Destination = "C:\Temp\kiosk.ico"
+    $Destination = "C:\kiosk.ico"
     Invoke-WebRequest -Uri $text -OutFile $Destination
     Write-Host 'Adding Kiosk Shortcut to Desktop'
     $TargetFile = "C:\v2.4_14vp\ms.Visitors.Kiosk.exe"
