@@ -1,5 +1,5 @@
 # Created By Adam Waszczyszak
-# Version 2.1
+# Version 2.2
 
 $host.ui.RawUI.WindowTitle = “Litetouch setup for Kiosks by Adam Waszczyszak”
 # Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
@@ -389,6 +389,21 @@ bOpt2=0
     Copy-Item $shortcutPath -Destination $startupPath
     Write-Host 'Added to startup!'
 
+    'Parsing download site for Teamviewer Setup...'
+            
+    # Retrieve the HTML content of the website
+    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/50a71d63-6535-4343-88dc-f6870af278e2"
+    # Extract the text content from the parsed HTML
+    $text = $response.ParsedHtml.body.innerText
+
+    'Downloading...'
+
+    $Destination = "C:\Temp\Teamviewer.exe"
+    Invoke-WebRequest -Uri $text -OutFile $Destination
+    "Launching Teamviewer installer..."
+    Start-Process -FilePath "C:\Temp\Teamviewer.exe"
+    "Success!"
+
     'Disabling Rear Camera...'
     Get-PnpDevice -FriendlyName "*Microsoft Camera Rear*" | Disable-PnpDevice -Confirm:$false
     'Camera Disabled!'
@@ -450,13 +465,6 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         $HOMEURL = 'https://msshift.webex.com'
         Set-ItemProperty -Path $EdgeSUURL -Name '1' -Value $HomeURL
 
-        'Giving 120 seconds for processes to catch up...'
-        Start-Sleep -Seconds 120
-
-        'Blocking services...'
-        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO Connect” -Description “Block DYMO Connect” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action  
-        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO WebService” -Description “Block DYMO WebService” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action 
-
         'Blocking Windows Updates...'
 
         # Check service status
@@ -476,10 +484,24 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         'Disable scheduled task'
         Get-ScheduledTask -TaskPath '\Microsoft\Windows\WindowsUpdate\'  | Disable-ScheduledTask -ErrorAction SilentlyContinue
 
-        'Removing all drivers from Temp Folder...'
+        'Make sure that all installation are complete, then continue.'
+        while ($true) {
+            $userInput = Read-Host "Type 'C' to continue"
+            if ($userInput -eq 'C') {
+                Write-Host "Continuing..."
+                break
+            } 
+            else {
+                Write-Host "Invalid input. Please type 'C' to continue."
+            }
+        }
 
-        Get-ChildItem "C:\Temp\" -Recurse | Remove-Item -Force -Verbose
-    
+        'Blocking services...'
+        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO Connect” -Description “Block DYMO Connect” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action  
+        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO WebService” -Description “Block DYMO WebService” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action 
+        
+        'Removing all files from Temp Folder...'
+        Get-ChildItem "C:\Temp\" -Recurse | Remove-Item -Force -Verbose   
         'Temp folder cleaned!'
 
         # Run Office uninstall command (you need the ODT setup folder with the config.xml file)
