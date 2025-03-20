@@ -260,6 +260,9 @@ echo Queue Deleted.
 net start spooler
 "@
 
+    'Removed all scheduled tasks.'
+    Get-ScheduledTask | Unregister-ScheduledTask -Confirm:$false
+
 $vbsContent = @"
 CreateObject("Wscript.Shell").Run "C:\QueueDeletion.bat",0,True
 "@
