@@ -355,8 +355,8 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         }
 
         'Blocking services...'
-        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO Connect” -Description “Block DYMO Connect” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action  
-        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe" -Action Block -Profile Domain, Private, Public -DisplayName “Block DYMO WebService” -Description “Block DYMO WebService” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action 
+        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe" -Action Block -Profile Domain, Private, Public -DisplayName Â“Block DYMO ConnectÂ” -Description Â“Block DYMO ConnectÂ” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action  
+        New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe" -Action Block -Profile Domain, Private, Public -DisplayName Â“Block DYMO WebServiceÂ” -Description Â“Block DYMO WebServiceÂ” -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action 
         
         'Removing all files from Temp Folder...'
         Get-ChildItem "C:\Temp\" -Recurse | Remove-Item -Force -Verbose   
@@ -398,5 +398,3 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
 
         'Deleting Local MS Shift User'
         Remove-LocalUser -Name "msshi"
-
-}
