@@ -1,4 +1,7 @@
-# Self-check for admin rights, and ask for perms if launched not as admin (from Superuser.com)
+# Created By Adam Waszczyszak
+# Version 3.0
+$host.ui.RawUI.WindowTitle = “adamwasz.com”
+
 function Test-Admin {
     $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
     $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
@@ -6,8 +9,8 @@ function Test-Admin {
 
 if ((Test-Admin) -eq $false)  {
     if ($elevated) {
-        # tried to elevate, did not work, aborting
-    } else {
+    } 
+    else {
         Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
     }
     exit
@@ -23,10 +26,11 @@ Set-ExecutionPolicy Bypass
 Clear-Host
 
 # Disabling download progress bar increases download speed significantly.
+
 $ProgressPreference = 'SilentlyContinue'
 
-
     if (Test-Path -Path C:\Temp){
+        Clear-Host
         "Temp Folder Already Exists"
        }
    
@@ -34,15 +38,13 @@ $ProgressPreference = 'SilentlyContinue'
             New-Item -Path C:\Temp -ItemType Directory
         }
    
-        if (Test-Path -Path C:\Visitor_Pic){
-            "Visitor_Pic Folder Already Exists"
-        }
+    if (Test-Path -Path C:\Visitor_Pic){
+        "Visitor_Pic Folder Already Exists"
+    }
    
         else{
             New-Item -Path C:\Visitor_Pic -ItemType Directory
         }
-   
-        'Folders Created.'
     
      $path=Get-Acl -Path C:\Temp
      $acl=New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule ('BUILTIN\Users','FullControl','ContainerInherit, ObjectInherit','None','Allow')
@@ -57,14 +59,11 @@ $ProgressPreference = 'SilentlyContinue'
 
      "Permissions for Temp and Visitor_Pics Set!"
 
-    'Installing Windows Update PS Module...'
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
     Install-Module -Name PSWindowsUpdate -Force
     'Installing all newest Windows Updates'
     Import-Module -Name PSWindowsUpdate -Force
     Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot -Verbose
-
-     'Done, remember to restart later!'
 
      'Enabling Rotation Lock using Registry.'
      Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AutoRotation -Name Enable -Value 0 -Type DWord
@@ -83,16 +82,10 @@ $ProgressPreference = 'SilentlyContinue'
      [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main]
      "DisableFirstRunCustomize"=dword:00000001 
 "@
-
-     # Create a temporary .reg file
      $tempFile = New-TemporaryFile 
      $tempFile.FullName 
      $regContent | Out-File -FilePath $tempFile.FullName -Encoding ASCII
-
-     # Import the registry settings
      reg.exe import $tempFile.FullName
-
-     # Clean up the temporary file
      Remove-Item $tempFile.FullName   
 
      'Parsing download site...'
@@ -121,14 +114,13 @@ $ProgressPreference = 'SilentlyContinue'
 
      $Destination = "C:\Temp\Zebra_CoreScanner_Driver.exe" 
      Invoke-WebRequest -Uri $text -OutFile $Destination
-     'Downloading Kiosk PDF...'
 
-     $Destination = "C:\Temp\Kiosk Configs.pdf" 
-     Invoke-WebRequest -Uri $text -OutFile $Destination
-    # Retrieve the HTML content of the website
+    $Destination = [System.IO.Path]::Combine([System.Environment]::GetFolderPath('MyDocuments'), 'Kiosk Configs.pdf')
     $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/0958c824-3f1e-42b3-89d1-c29a88efe9c2"
-    # Extract the text content from the parsed HTML
     $text = $response.ParsedHtml.body.innerText
+    Invoke-WebRequest -Uri $text -OutFile $Destination
+    'Kiosk Scanner Config PDF saved in Documents Folder...'
+
 
 $issContent = @"
 [{C96D0CF9-799F-4332-81FF-130C0F58AB0C}-DlgOrder]
@@ -166,7 +158,6 @@ bOpt2=0
 	Start-Process "cmd.exe" -ArgumentList "/c", "$exePath -s -f1`"$issFilePath`""
 
 	Write-Host "CMD launched with Zebra Installer and arguments."
-
     "Success!"
 
     'Parsing download site...'
@@ -180,9 +171,6 @@ bOpt2=0
 
     $Destination = "C:\Temp\DCDSetup1.4.5.1.exe" 
     Invoke-WebRequest -Uri $text -OutFile $Destination
-
-    'Giving 45 seconds for processes to catch up...'
-    Start-Sleep -Seconds 45
 
     "Launching DYMO 550 driver with silent installer params..."
     Start-Process -FilePath "C:\Temp\DCDSetup1.4.5.1.exe" -ArgumentList "/S", "/v/qn"
@@ -216,36 +204,28 @@ bOpt2=0
     Write-Host 'Adding Kiosk Shortcut to Desktop'
     $TargetFile = "C:\v2.4_14vp\ms.Visitors.Kiosk.exe"
     $ShortcutFile = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"
-
-    # Check if the target file exists
     if (-Not (Test-Path $TargetFile)) {
         Write-Host "Error: Target file does not exist at $TargetFile"
         return
     }
-
-    # Ensure the Desktop directory exists
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
     if (-Not (Test-Path $desktopPath)) {
         Write-Host "Error: Desktop directory does not exist."
         return
     }
 
-    # Create a shortcut object
     $WshShell = New-Object -ComObject WScript.Shell
     $Shortcut = $WshShell.CreateShortcut($ShortcutFile)
-
-    # Set shortcut properties
     $Shortcut.TargetPath = $TargetFile
-    $Shortcut.IconLocation = "C:\kiosk.ico"  # Adjust if the icon path is different
+    $Shortcut.IconLocation = "C:\kiosk.ico"
     $Shortcut.Save()
-
     Write-Host "Shortcut created at $ShortcutFile"
 
 
     $shortcutPath = "$env:USERPROFILE\Desktop\MS Shift Kiosk.lnk"
     $startupPath = [Environment]::GetFolderPath("Startup")
     Copy-Item $shortcutPath -Destination $startupPath
-    Write-Host 'Added to startup!'
+    Write-Host 'Added kiosk app to Startup folder.'
 
     'Parsing download site for Teamviewer Setup...'
             
@@ -261,17 +241,14 @@ bOpt2=0
     "Launching Teamviewer installer..."
     Start-Process -FilePath "C:\Temp\Teamviewer.exe"
     "Success!"
-
-    'Disabling Rear Camera...'
     Get-PnpDevice -FriendlyName "*Microsoft Camera Rear*" | Disable-PnpDevice -Confirm:$false
-    'Camera Disabled!'
+    'Rear Camera Disabled.'
 
-    'Editing power plan settings...'
     Powercfg /Change monitor-timeout-ac 0
     Powercfg /Change monitor-timeout-dc 0
     Powercfg /Change standby-timeout-ac 0
     Powercfg /Change standby-timeout-dc 0
-    'Power plan saved!'
+    'Power plan settings changed.'
 
     $batchContent = @"
 @echo off
@@ -323,26 +300,16 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         $HOMEURL = 'https://msshift.webex.com'
         Set-ItemProperty -Path $EdgeSUURL -Name '1' -Value $HomeURL
 
-        'Blocking Windows Updates...'
-
-        # Check service status
         sc.exe query wuauserv
-
-        # Stop process in case it is running
-
         sc.exe stop wuauserv
-
-        # Set service to disabled
         sc.exe config wuauserv start=disabled
-
-        'Start Value should be 0x4 if really disabled'
         REG.exe QUERY HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\wuauserv /v Start
+        'Windows Updates Blocked'
 
-        # Disabled scheduled task
-        'Disable scheduled task'
         Get-ScheduledTask -TaskPath '\Microsoft\Windows\WindowsUpdate\'  | Disable-ScheduledTask -ErrorAction SilentlyContinue
 
-        'Make sure that all installation are complete, then continue.'
+        'Please make sure that all installations are complete, then continue.'
+
         while ($true) {
             $userInput = Read-Host "Type 'C' to continue"
             if ($userInput -eq 'C') {
@@ -354,17 +321,11 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
             }
         }
 
-        'Blocking services...'
         New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMOConnect.exe" -Action Block -Profile Domain, Private, Public -DisplayName Block DYMO Connect -Description Block DYMO Connect -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action  
         New-NetFirewallRule -Program "C:\Program Files (x86)\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe" -Action Block -Profile Domain, Private, Public -DisplayName Block DYMO WebService -Description Block DYMO WebService -Direction Outbound | Format-Table -AutoSize -Property DisplayName, Enabled, Direction, Action 
-        
-        'Removing all files from Temp Folder...'
+        'DYMO Services blocked in Firewall.'
         Get-ChildItem "C:\Temp\" -Recurse | Remove-Item -Force -Verbose   
-        'Temp folder cleaned!'
-
-        # Run Office uninstall command (you need the ODT setup folder with the config.xml file)
-        Set-Location "C:\Program Files\Common Files\Microsoft Shared\ClickToRun"
-        .\OfficeC2RClient.exe operation Uninstall
+        'Temp folder cleaned of all files!'
 
         # Steps to kill Explorer, and remove pinned items from Taskbar
         Stop-Process -Name explorer -Force
@@ -380,21 +341,8 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         'Disable scheduled task'
         Get-ScheduledTask -TaskPath '\Microsoft\Windows\WindowsUpdate\'  | Disable-ScheduledTask -ErrorAction SilentlyContinue
         'Adobe and Windows Updates blocked in Services.'
-
-    Get-ScheduledTask | ForEach-Object {
-        $task = $_
-        $taskName = $task.TaskName
-        
-        if ($taskName -eq "Auto Kiosk Script") {
-            $runningTask = Get-Process | Where-Object { $_.Path -like "*Auto Kiosk Script*" }
-
-            if ($runningTask) {
-                $runningTask | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
-            }
-            
-            Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
-        }
-    }
-
-        'Deleting Local MS Shift User'
         Remove-LocalUser -Name "msshi"
+        'Online MS Shift User Account deleted'
+        
+        'Kiosk Scanner Config PDF saved in Documents Folder...'
+        'Please restart the kiosk to complete Windows updates'
