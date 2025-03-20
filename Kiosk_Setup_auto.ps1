@@ -261,20 +261,20 @@ net start spooler
 "@
 
 $vbsContent = @"
-CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
+CreateObject("Wscript.Shell").Run "C:\QueueDeletion.bat",0,True
 "@
 
-        $batchFilePath = "C:\Temp\QueueDeletion.bat"
+        $batchFilePath = "C:\QueueDeletion.bat"
         $batchContent | Out-File -FilePath $batchFilePath -Encoding ascii
         "Batch File created in Temp folder..."
 
         "Creating VBS for silent launch..."
-        $vbsFilePath = "C:\Temp\QueueDeletion.vbs"
+        $vbsFilePath = "C:\QueueDeletion.vbs"
         $vbsContent | Out-File -FilePath $vbsFilePath -Encoding ascii
         "VBS File created in Temp folder..."
 
-        "Creating Scheduled Task..."
-        $action = New-ScheduledTaskAction -Execute "C:\Temp\QueueDeletion.vbs"
+        "Creating Scheduled VBS Task..."
+        $action = New-ScheduledTaskAction -Execute "C:\QueueDeletion.vbs"
         $trigger = New-ScheduledTaskTrigger -Daily -At 11:30AM
         Register-ScheduledTask -TaskName "Print Queue Deletion Task" -Action $action -Trigger $trigger -AsJob -Force -RunLevel Highest
 
@@ -343,6 +343,13 @@ CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
         'Adobe and Windows Updates blocked in Services.'
         Remove-LocalUser -Name "msshi"
         'Online MS Shift User Account deleted'
-        
-        'Kiosk Scanner Config PDF saved in Documents Folder...'
-        'Please restart the kiosk to complete Windows updates'
+      
+        Add-Type -AssemblyName System.Windows.Forms
+        $message = @"
+Script has finished executing.                    
+Kiosk Scanner Config PDF is saved in the Documents Folder
+Please restart the kiosk to complete Windows updates.
+"@
+
+        [System.Windows.Forms.MessageBox]::Show($message, "Done!", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        exit
