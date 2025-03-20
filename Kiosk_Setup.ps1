@@ -167,6 +167,7 @@ if($startMenu -eq 1){
 }
 
 if($startMenu -eq 2){
+    'Launching Auto Script...'
     irm https://raw.githubusercontent.com/ad4m-w/MS_Shift_Kiosk_Script/refs/heads/main/Kiosk_Setup_auto.ps1 | iex
     exit
 }
