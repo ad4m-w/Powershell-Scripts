@@ -413,7 +413,7 @@ if($msedgePatch -eq $true){
 if($silentAPI -eq $true){
     'Parsing download site for API Download Link...'     
     # Retrieve the HTML content of the website
-    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/e2d06108-8cc8-4705-a316-54463dc1d78f"
+    $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/c8789c47-a01f-452e-8ffc-1a6143eb2c16"
     # Extract the text content from the parsed HTML
     $text = $response.ParsedHtml.body.innerText
     'Downloading...'
