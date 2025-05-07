@@ -1,5 +1,5 @@
 # Created By Adam Waszczyszak
-# Version 3.5
+# Version 3.5.1
 $host.ui.RawUI.WindowTitle = “adamwasz.com”
 
 # Self-check for admin rights, if not admin then launch as admin and run the script.
@@ -9,7 +9,7 @@ function Test-Admin {
 }
 
 if (-not (Test-Admin)) {
-    $cmd = 'irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Kiosk_Setup.ps1 | iex'
+    $cmd = 'irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Kiosk-Script/Kiosk_Start.ps1 | iex'
     $args = "-NoProfile -NoExit -Command `"& { $cmd }`""
     Start-Process powershell.exe -Verb RunAs -ArgumentList $args
     exit
@@ -142,7 +142,7 @@ if($startMenu -eq 1){
 }
 
 if($startMenu -eq 2){
-    irm https://raw.githubusercontent.com/ad4m-w/MS_Shift_Kiosk_Script/refs/heads/main/Kiosk_Setup_auto.ps1 | iex
+    irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Kiosk-Script/Kiosk_Auto.ps1 | iex
     exit
 }
 
