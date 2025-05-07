@@ -12,7 +12,7 @@
 
 Kiosk:
 ```
-irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Kiosk_Setup.ps1 | iex
+irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Kiosk-Script/Kiosk_Start.ps1 | iex
 ```
 Office PC Setup:
 ```
