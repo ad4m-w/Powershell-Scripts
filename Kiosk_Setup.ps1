@@ -303,20 +303,18 @@ while($MenuChoice -ne 'X'){
 
             if($DownloadPick -eq 1){
             
-                'Parsing download site...'
-            
+                'Parsing download site for API Download Link...'     
                 # Retrieve the HTML content of the website
-                $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/e2d06108-8cc8-4705-a316-54463dc1d78f"
+                $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/c8789c47-a01f-452e-8ffc-1a6143eb2c16"
                 # Extract the text content from the parsed HTML
                 $text = $response.ParsedHtml.body.innerText
-
                 'Downloading...'
                 $Destination = "C:\Temp\api.zip" 
                 Invoke-WebRequest -Uri $text -OutFile $Destination
                 'Uncompressing...'
                 Expand-Archive -LiteralPath 'C:\Temp\api.zip' -DestinationPath C:\Temp
-                "Launching API installer..."
-                Start-Process -FilePath "C:\Temp\MSShift.DevicesAPI.Setup.NEW.msi"
+                "Launching API with silent installer params..."
+                Start-Process -FilePath "C:\Temp\New API\MSShift.DevicesAPI.Setup.1.9.msi" -ArgumentList "/passive", "/norestart"
                 "Success!"
 
             }
@@ -660,21 +658,18 @@ while($MenuChoice -ne 'X'){
 
             if($SilentPick -eq 1){
             
-                'Parsing download site...'
-            
+                'Parsing download site for API Download Link...'     
                 # Retrieve the HTML content of the website
-                $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/e2d06108-8cc8-4705-a316-54463dc1d78f"
+                $response = Invoke-WebRequest -Uri "https://download.msshift.com/link/c8789c47-a01f-452e-8ffc-1a6143eb2c16"
                 # Extract the text content from the parsed HTML
                 $text = $response.ParsedHtml.body.innerText
-
                 'Downloading...'
-                   
                 $Destination = "C:\Temp\api.zip" 
                 Invoke-WebRequest -Uri $text -OutFile $Destination
                 'Uncompressing...'
                 Expand-Archive -LiteralPath 'C:\Temp\api.zip' -DestinationPath C:\Temp
                 "Launching API with silent installer params..."
-                Start-Process -FilePath "C:\Temp\MSShift.DevicesAPI.Setup.NEW.msi" -ArgumentList "/passive", "/norestart"
+                Start-Process -FilePath "C:\Temp\New API\MSShift.DevicesAPI.Setup.1.9.msi" -ArgumentList "/passive", "/norestart"
                 "Success!"
 
             }
@@ -816,7 +811,7 @@ while($MenuChoice -ne 'X'){
                 Invoke-WebRequest -Uri $text -OutFile $Destination
 
                 "Launching DYMO 450 driver with silent installer params..."
-                Start-Process -FilePath "C:\Temp\DCDSetup1.3.2.18.exe" -ArgumentList "/S", "/v/qn"
+                Start-Process -FilePath "C:\Temp\DCDSetup1.3.2.18.exe" -ArgumentList "/S", "/v/qn" -Wait
                 "Success!"
 
             }
@@ -842,24 +837,21 @@ net start spooler
 "@
 
 $vbsContent = @"
-CreateObject("Wscript.Shell").Run "C:\Temp\QueueDeletion.bat",0,True
+CreateObject("Wscript.Shell").Run "C:\QueueDeletion.bat",0,True
 "@
 
-        $batchFilePath = "C:\Temp\QueueDeletion.bat"
-        $batchContent | Out-File -FilePath $batchFilePath -Encoding ascii
-        "Batch File created in Temp folder..."
+    $batchFilePath = "C:\QueueDeletion.bat"
+    $batchContent | Out-File -FilePath $batchFilePath -Encoding ascii
+    "Batch File created in C:\..."
+    "Creating VBS for silent launch..."
+    $vbsFilePath = "C:\QueueDeletion.vbs"
+    $vbsContent | Out-File -FilePath $vbsFilePath -Encoding ascii
+    "VBS File created in Temp folder..."
+    "Creating Scheduled VBS Task..."
+    $action = New-ScheduledTaskAction -Execute "C:\QueueDeletion.vbs"
+    $trigger = New-ScheduledTaskTrigger -Daily -At 11:30AM
 
-        "Creating VBS for silent launch..."
-        $vbsFilePath = "C:\Temp\QueueDeletion.vbs"
-        $vbsContent | Out-File -FilePath $vbsFilePath -Encoding ascii
-        "VBS File created in Temp folder..."
-
-        "Creating Scheduled Task..."
-        $action = New-ScheduledTaskAction -Execute "C:\Temp\QueueDeletion.vbs"
-        $trigger = New-ScheduledTaskTrigger -Daily -At 11:30AM
-        Register-ScheduledTask -TaskName "Print Queue Deletion Task" -Action $action -Trigger $trigger -AsJob -Force -RunLevel Highest
-
-    }
+Register-ScheduledTask -TaskName "Print Queue Deletion Task" -Action $action -Trigger $trigger -AsJob -Force -RunLevel Highest
 
     $MenuChoice = Read-Host "Choose another function menu option"
 
