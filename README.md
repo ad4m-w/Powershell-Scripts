@@ -10,15 +10,15 @@
 2.   See which script you need
 3.   Copy and paste the code below and press enter:
 
-Kiosk:
+**Kiosk:**
 ```
 irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Kiosk-Script/Kiosk_Start.ps1 | iex
 ```
-Office PC Setup:
+**Office PC Setup:**
 ```
-irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/PCSetup.ps1 | iex
+irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Local-Office-Setups/PCSetup.ps1 | iex
 ```
-Master Script:
+**Master Script:**
 ```
-irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Master_Script.ps1 | iex
+irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Master-Script/Master_Script.ps1 | iex
 ```
