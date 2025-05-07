@@ -422,7 +422,7 @@ if($silentAPI -eq $true){
     'Uncompressing...'
     Expand-Archive -LiteralPath 'C:\Temp\api.zip' -DestinationPath C:\Temp
     "Launching API with silent installer params..."
-    Start-Process -FilePath "C:\Temp\MSShift.DevicesAPI.Setup.NEW.msi" -ArgumentList "/passive", "/norestart"
+    Start-Process -FilePath "C:\Temp\New API\MSShift.DevicesAPI.Setup.1.9.msi" -ArgumentList "/passive", "/norestart"
     "Success!"
     Read-Host -Prompt "Press any key to continue..."
 }
