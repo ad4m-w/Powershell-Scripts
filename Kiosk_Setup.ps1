@@ -1,27 +1,21 @@
 # Created By Adam Waszczyszak
-# Version 2.3
-
+# Version 3.5
 $host.ui.RawUI.WindowTitle = “adamwasz.com”
-# Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\Kiosk_Setup.ps1"
-# Update local group policy if the bypass does not work.
-# Manually disable S-Mode to allow for scripts to run.
 
-# Self-check for admin rights, and ask for perms if launched not as admin (from Superuser.com)
+# Self-check for admin rights, if not admin then launch as admin and run the script.
 function Test-Admin {
-    $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-    $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+    $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
 
-if ((Test-Admin) -eq $false)  {
-    if ($elevated) {
-        # tried to elevate, did not work, aborting
-    } else {
-        Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
-    }
+if (-not (Test-Admin)) {
+    $cmd = 'irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Kiosk_Setup.ps1 | iex'
+    $args = "-NoProfile -NoExit -Command `"& { $cmd }`""
+    Start-Process powershell.exe -Verb RunAs -ArgumentList $args
     exit
 }
 
-# Disable Quick Edit Mode
+# Disable Quick Edit Mode to help bypass timeouts
 Set-ItemProperty -Path 'HKCU:\Console\' -Name QuickEdit -Value 0
 
 # Bypass Execution Policy
@@ -121,8 +115,6 @@ if($startMenu -eq 1){
         
         Clear-Host
         
-    #Paolo Frigo, https://www.scriptinglibrary.com
-
     function Create-NewLocalAdmin {
         [CmdletBinding()]
         param (
@@ -143,23 +135,6 @@ if($startMenu -eq 1){
     $NewLocalAdmin = Read-Host "New local admin username:"
     $Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
     Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
-
-    $autoPS = @"
-    irm https://raw.githubusercontent.com/ad4m-w/MS_Shift_Kiosk_Script/refs/heads/main/Kiosk_Setup.ps1 | iex
-"@
-    $tempFile = "C:\Temp\auto.txt"
-    $autoPS | Out-File -FilePath $tempFile -Encoding ASCII
-    $newFileName = [System.IO.Path]::ChangeExtension($tempFile, ".ps1")
-    Rename-Item $tempFile $newFileName
-    
-    # Define the action to start a program
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File C:\Temp\auto.ps1 -NoProfile -ExecutionPolicy Bypass"
-
-    # Define the trigger to run daily at a specific time
-    $trigger = New-ScheduledTaskTrigger -AtStartup
-
-    # Register the scheduled task
-    Register-ScheduledTask -TaskName "Auto Kiosk Script" -Action $action -Trigger $trigger
         
     Read-Host -Prompt "Press Enter to sign out..."
     shutdown /l
@@ -167,7 +142,6 @@ if($startMenu -eq 1){
 }
 
 if($startMenu -eq 2){
-    'Launching Auto Script...'
     irm https://raw.githubusercontent.com/ad4m-w/MS_Shift_Kiosk_Script/refs/heads/main/Kiosk_Setup_auto.ps1 | iex
     exit
 }
