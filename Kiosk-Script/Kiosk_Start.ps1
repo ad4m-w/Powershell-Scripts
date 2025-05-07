@@ -146,24 +146,27 @@ if($startMenu -eq 2){
     exit
 }
 
-if($startMenu -eq 3){
-# Function for the Menu creation
-function Print-Menu{
-    MenuMaker -Selections 'Create Temp and Visitor_pics Folders', #1
-    'Set Temp and Visitor_Pics Permissions', #2
-    'Set PTI Folder Permissions', #3
-    'Block DYMO Updates', #4
-    'Block Adobe Auto-Update Service', #5 
-    'Disable S-Mode', #6
-    'Download and Install Windows Updates', #7
-    'Enable Rotation Lock', #8
-    'Disable Notifications', #9
-    'Driver download and install menu', #10
-    'Microsoft Edge Registry Patch (Edge Engine Error)', #11
-    'Delete drivers from Temp', #12
-    'Disable Windows Updates', #13
-    'Silent Install Menu', #14
-    'Create silent print queue deletion task.' -Title 'Choose a Function (Type "menu" to reload)' -IncludeExit
+if ($startMenu -eq 3) {
+    # Function for the Menu creation
+    function Print-Menu {
+        MenuMaker -Selections 'Create Temp and Visitor_pics Folders', 
+                  'Set Temp and Visitor_Pics Permissions', 
+                  'Set PTI Folder Permissions', 
+                  'Block DYMO Updates', 
+                  'Block Adobe Auto-Update Service', 
+                  'Disable S-Mode', 
+                  'Download and Install Windows Updates', 
+                  'Enable Rotation Lock', 
+                  'Disable Notifications', 
+                  'Driver download and install menu', 
+                  'Microsoft Edge Registry Patch (Edge Engine Error)', 
+                  'Delete drivers from Temp', 
+                  'Disable Windows Updates', 
+                  'Silent Install Menu', 
+                  'Create silent print queue deletion task.' 
+                  -Title 'Choose a Function (Type "menu" to reload)' 
+                  -IncludeExit
+    }
 }
 
 Print-Menu
