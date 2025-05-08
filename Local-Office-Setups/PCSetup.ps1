@@ -11,7 +11,7 @@ function Test-Admin {
 }
 
 if (-not (Test-Admin)) {
-    $cmd = 'https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Local-Office-Setups/PCSetup.ps1 | iex'
+    $cmd = 'irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Local-Office-Setups/PCSetup.ps1 | iex'
     $args = "-NoProfile -NoExit -Command `"& { $cmd }`""
     Start-Process powershell.exe -Verb RunAs -ArgumentList $args
     exit
