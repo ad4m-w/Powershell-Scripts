@@ -1,23 +1,18 @@
 # Created By Adam Waszczyszak
-# Version 1.6
+# Version 2.0
 
-$host.ui.RawUI.WindowTitle = “Master Script by Adam Waszczyszak”
-# Scripts Disabled Bypass from CMD: powershell -ExecutionPolicy Bypass -File "C:\Temp\MSShell.ps1"
-# Update local group policy if the bypass does not work.
+$host.ui.RawUI.WindowTitle = “adamwasz.com”
 
-# Self-check for admin rights, and ask for perms if launched not as admin (from Superuser.com)
-
+# Self-check for admin rights, if not admin then launch as admin and run the script.
 function Test-Admin {
-    $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-    $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+    $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
 
-if ((Test-Admin) -eq $false)  {
-    if ($elevated) {
-        # tried to elevate, did not work, aborting
-    } else {
-        Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
-    }
+if (-not (Test-Admin)) {
+    $cmd = 'https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Master-Script/Master_Script.ps1 | iex'
+    $args = "-NoProfile -NoExit -Command `"& { $cmd }`""
+    Start-Process powershell.exe -Verb RunAs -ArgumentList $args
     exit
 }
 
