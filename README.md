@@ -1,14 +1,14 @@
 <p align="center"><img src="https://raw.githubusercontent.com/ad4m-w/ad4m-w.github.io/refs/heads/main/profile.png" alt="ad4m profile picture"></p>
 
-<h1 align="center">Adam's PowerShell Script</h1>
+<h1 align="center">Adam's PowerShell Scripts</h1>
 
 <p align="center">PowerShell Scripts that automate PC setups, kiosk setups and much more!.</p>
 
 <hr>
 
-1.   Open PowerShell as Admin
-2.   See which script you need
-3.   Copy and paste the code below and press enter:
+1.   Open PowerShell
+2.   Copy which script you need
+3.   Paste it into the PowerShell window
 
 **Kiosk:**
 ```
