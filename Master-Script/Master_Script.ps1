@@ -1,6 +1,5 @@
 # Created By Adam Waszczyszak
 # Version 2.0
-
 $host.ui.RawUI.WindowTitle = “adamwasz.com”
 
 # Self-check for admin rights, if not admin then launch as admin and run the script.
@@ -10,7 +9,7 @@ function Test-Admin {
 }
 
 if (-not (Test-Admin)) {
-    $cmd = 'https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Master-Script/Master_Script.ps1 | iex'
+    $cmd = 'irm https://raw.githubusercontent.com/ad4m-w/Powershell-Scripts/refs/heads/main/Master-Script/Master_Script.ps1 | iex'
     $args = "-NoProfile -NoExit -Command `"& { $cmd }`""
     Start-Process powershell.exe -Verb RunAs -ArgumentList $args
     exit
