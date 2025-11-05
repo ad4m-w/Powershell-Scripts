@@ -26,36 +26,6 @@ Clear-Host
 # Disabling download progress bar increases download speed significantly.
 $ProgressPreference = 'SilentlyContinue'
 
-$Destination = "C:\Temp\clipwav.wav"
-
-# Download the WAV file
-Invoke-WebRequest -Uri "https://github.com/ad4m-w/Powershell-Scripts/raw/refs/heads/main/Kiosk-Script/clipwav.wav" -OutFile $Destination
-
-Add-Type -AssemblyName System.Windows.Forms
-
-# Verify file exists
-if (-Not (Test-Path $Destination)) {
-    [System.Windows.Forms.MessageBox]::Show("WAV file not found at $Destination", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-    exit
-}
-
-# Create SoundPlayer and play asynchronously
-$player = New-Object System.Media.SoundPlayer $Destination
-$player.Play()
-
-# Show message box with OK and Cancel buttons
-$result = [System.Windows.Forms.MessageBox]::Show(
-    "Click Cancel to stop playback, DM me and Ill remove this LOL", 
-    "Audio Player", 
-    [System.Windows.Forms.MessageBoxButtons]::OKCancel, 
-    [System.Windows.Forms.MessageBoxIcon]::Information
-)
-
-if ($result -eq [System.Windows.Forms.DialogResult]::Cancel) {
-    $player.Stop()
-    [System.Windows.Forms.MessageBox]::Show("Playback stopped.", "Audio Player")
-}
-
 # Test if folders exist and then create if they do not.
 if (Test-Path -Path C:\Temp){
     Clear-Host
@@ -367,4 +337,5 @@ Please restart the kiosk to complete Windows updates.
 
 [System.Windows.Forms.MessageBox]::Show($message, "Done!", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
 exit
+
 
